@@ -17,7 +17,8 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 
 @ModuleInfo(name = "AutoRod", category = ModuleCategory.COMBAT)
-class AutoRod: Module() {
+object AutoRod: Module() {
+
     private val t1 = MSTimer()
     private val t2 = MSTimer()
 

@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.misc
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.event.UpdateEvent
@@ -21,7 +21,8 @@ import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.minecraft.network.play.server.S02PacketChat
 
 @ModuleInfo(name = "AutoGG", category = ModuleCategory.MISC)
-class AutoGG : Module() {
+object AutoGG : Module() {
+
     private val winCheckValue = TextValue("WinCheck", "Winner")
     private val delayValue = IntegerValue("Delay", 1000, 1000, 5000)
     private val ggMessageValue = TextValue("GGMessage", "GG!")
@@ -55,7 +56,7 @@ class AutoGG : Module() {
     fun onUpdate(event: UpdateEvent) {
         if(winning) {
             if(timer.hasTimePassed(delayValue.get().toLong())){
-                LiquidBounce.hud.addNotification(Notification("AutoGG", "Sent", NotifyType.SUCCESS, 1000, 500))
+                FDPClient.hud.addNotification(Notification("AutoGG", "Sent", NotifyType.SUCCESS, 1000, 500))
                 mc.thePlayer.sendChatMessage(ggMessageValue.get())
                 timer.reset()
                 winning = false

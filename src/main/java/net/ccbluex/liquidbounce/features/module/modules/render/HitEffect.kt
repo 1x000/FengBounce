@@ -26,7 +26,7 @@ import net.minecraft.util.EnumParticleTypes
 import net.minecraft.util.ResourceLocation
 
 @ModuleInfo(name = "HitEffect", category = ModuleCategory.RENDER)
-class HitEffect : Module() {
+object HitEffect : Module() {
 
     private val timingValue = ListValue("Timing", arrayOf("Attack", "Kill"), "Attack")
     private val modeValue = ListValue("Mode", arrayOf("Lighting", "Blood", "Fire", "Critical", "MagicCritical"), "Lighting")

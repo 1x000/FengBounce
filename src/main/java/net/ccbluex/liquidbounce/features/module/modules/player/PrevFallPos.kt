@@ -1,3 +1,8 @@
+/*
+ * FDPClient Hacked Client
+ * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
+ * https://github.com/SkidderMC/FDPClient/
+ */
 package net.ccbluex.liquidbounce.features.module.modules.player
 
 import net.ccbluex.liquidbounce.event.EventTarget
@@ -18,7 +23,8 @@ import java.awt.Color
 import kotlin.math.abs
 
 @ModuleInfo(name = "PrevFallPos", category = ModuleCategory.PLAYER)
-class PrevFallPos : Module() {
+object PrevFallPos : Module() {
+
     private val modeValue = ListValue("Mode", arrayOf("Box", "OtherBox", "Outline"), "Box")
     private val outlineWidthValue = FloatValue("Outline-Width", 3f, 0.5f, 5f).displayable { modeValue.equals("Outline") }
     private val fallDistValue = FloatValue("FallDist", 1.15F, 0F, 5F)

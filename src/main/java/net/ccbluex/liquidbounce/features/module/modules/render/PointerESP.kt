@@ -25,7 +25,8 @@ import java.awt.Color
 import kotlin.math.*
 
 @ModuleInfo(name = "PointerESP", category = ModuleCategory.RENDER)
-class PointerESP : Module() {
+object PointerESP : Module() {
+
     private val dimensionValue = ListValue("Dimension", arrayOf("2d", "3d"), "2d")
     private val modeValue = ListValue("Mode", arrayOf("Solid", "Line", "LoopLine"), "Solid")
     private val lineWidthValue = FloatValue("LineWidth", 4f, 1f, 10f).displayable { modeValue.get().contains("Line") }

@@ -16,7 +16,8 @@ import net.minecraft.network.play.client.C03PacketPlayer
 import net.minecraft.network.play.server.S08PacketPlayerPosLook
 
 @ModuleInfo(name = "Freeze", category = ModuleCategory.MOVEMENT, autoDisable = EnumAutoDisableType.RESPAWN)
-class Freeze : Module() {
+object Freeze : Module() {
+
     private var motionX = 0.0
     private var motionY = 0.0
     private var motionZ = 0.0

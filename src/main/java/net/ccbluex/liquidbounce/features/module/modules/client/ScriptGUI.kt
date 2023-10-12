@@ -11,7 +11,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.ui.client.gui.modernui.GuiScriptLoadMenu
 
 @ModuleInfo(name = "ScriptGUI", category = ModuleCategory.CLIENT, canEnable = false)
-class ScriptGUI : Module() {
+object ScriptGUI : Module() {
     override fun onEnable() {
         mc.displayGuiScreen(GuiScriptLoadMenu())
     }

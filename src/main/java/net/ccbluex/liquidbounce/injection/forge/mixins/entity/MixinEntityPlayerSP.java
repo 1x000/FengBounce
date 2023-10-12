@@ -5,21 +5,19 @@
  */
 package net.ccbluex.liquidbounce.injection.forge.mixins.entity;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 import net.ccbluex.liquidbounce.event.*;
 import net.ccbluex.liquidbounce.features.module.modules.combat.Criticals;
 import net.ccbluex.liquidbounce.features.module.modules.combat.KillAura;
 import net.ccbluex.liquidbounce.features.module.modules.exploit.AntiDesync;
-import net.ccbluex.liquidbounce.features.module.modules.movement.Fly;
-import net.ccbluex.liquidbounce.features.module.modules.movement.InventoryMove;
+import net.ccbluex.liquidbounce.features.module.modules.movement.Flight;
+import net.ccbluex.liquidbounce.features.module.modules.movement.InvMove;
 import net.ccbluex.liquidbounce.features.module.modules.movement.NoSlow;
 import net.ccbluex.liquidbounce.features.module.modules.movement.Sprint;
 import net.ccbluex.liquidbounce.features.module.modules.movement.StrafeFix;
 import net.ccbluex.liquidbounce.features.module.modules.world.Scaffold;
-import net.ccbluex.liquidbounce.utils.Rotation;
 import net.ccbluex.liquidbounce.utils.RotationUtils;
 import net.ccbluex.liquidbounce.utils.MovementUtils;
-import net.ccbluex.liquidbounce.utils.ClientUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockFenceGate;
@@ -48,8 +46,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-
-import static net.ccbluex.liquidbounce.script.api.global.Chat.alert;
 
 @Mixin(EntityPlayerSP.class)
 public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
@@ -139,10 +135,10 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
     @Inject(method = "onUpdateWalkingPlayer", at = @At("HEAD"), cancellable = true)
     public void onUpdateWalkingPlayer(CallbackInfo ci) {
         try {
-            final StrafeFix strafeFix = LiquidBounce.moduleManager.getModule(StrafeFix.class);
+            final StrafeFix strafeFix = FDPClient.moduleManager.getModule(StrafeFix.class);
             strafeFix.updateOverwrite();
             
-            LiquidBounce.eventManager.callEvent(new MotionEvent(EventState.PRE));
+            FDPClient.eventManager.callEvent(new MotionEvent(EventState.PRE));
 
             boolean flag = this.isSprinting();
             //alert("Attempt: " + debug_AttemptSprint + " Actual: " + this.isSprinting() + " Server: " + this.serverSprintState);
@@ -184,9 +180,9 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
                 double yawDiff = yaw - lastReportedYaw;
                 double pitchDiff = pitch - lastReportedPitch;
                 
-                final Fly fly = LiquidBounce.moduleManager.getModule(Fly.class);
-                final Criticals criticals = LiquidBounce.moduleManager.getModule(Criticals.class);
-                final AntiDesync antiDesync = LiquidBounce.moduleManager.getModule(AntiDesync.class);
+                final Flight fly = FDPClient.moduleManager.getModule(Flight.class);
+                final Criticals criticals = FDPClient.moduleManager.getModule(Criticals.class);
+                final AntiDesync antiDesync = FDPClient.moduleManager.getModule(AntiDesync.class);
                 boolean moved = xDiff * xDiff + yDiff * yDiff + zDiff * zDiff > 9.0E-4D || this.positionUpdateTicks >= 20 || (fly.getState() && fly.getAntiDesync()) || (criticals.getState() && criticals.getAntiDesync()) || (antiDesync.getState() && xDiff * xDiff + yDiff * yDiff + zDiff * zDiff > 0.0D);
                 boolean rotated = yawDiff != 0.0D || pitchDiff != 0.0D;
 
@@ -220,7 +216,7 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
                 }
             }
 
-            LiquidBounce.eventManager.callEvent(new MotionEvent(EventState.POST));
+            FDPClient.eventManager.callEvent(new MotionEvent(EventState.POST));
         } catch (final Exception e) {
             e.printStackTrace();
         }
@@ -232,7 +228,7 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
     private void onPushOutOfBlocks(CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
         PushOutEvent event = new PushOutEvent();
         if (this.noClip) event.cancelEvent();
-        LiquidBounce.eventManager.callEvent(event);
+        FDPClient.eventManager.callEvent(event);
 
         if (event.isCancelled())
             callbackInfoReturnable.setReturnValue(false);
@@ -265,12 +261,12 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
         
         this.movementInput.updatePlayerMoveState();
         
-        final Sprint sprint = LiquidBounce.moduleManager.getModule(Sprint.class);
-        final NoSlow noSlow = LiquidBounce.moduleManager.getModule(NoSlow.class);
-        final KillAura killAura = LiquidBounce.moduleManager.getModule(KillAura.class);
-        final InventoryMove inventoryMove = LiquidBounce.moduleManager.getModule(InventoryMove.class);
-        final Scaffold scaffold = LiquidBounce.moduleManager.getModule(Scaffold.class);
-        final StrafeFix strafeFix = LiquidBounce.moduleManager.getModule(StrafeFix.class);
+        final Sprint sprint = FDPClient.moduleManager.getModule(Sprint.class);
+        final NoSlow noSlow = FDPClient.moduleManager.getModule(NoSlow.class);
+        final KillAura killAura = FDPClient.moduleManager.getModule(KillAura.class);
+        final InvMove inventoryMove = FDPClient.moduleManager.getModule(InvMove.class);
+        final Scaffold scaffold = FDPClient.moduleManager.getModule(Scaffold.class);
+        final StrafeFix strafeFix = FDPClient.moduleManager.getModule(StrafeFix.class);
         
         if (this.sprintingTicksLeft > 0) {
             --this.sprintingTicksLeft;
@@ -325,7 +321,7 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
         
         //Run Sprint update before UpdateEvent
         
-        LiquidBounce.eventManager.callEvent(new UpdateEvent());
+        FDPClient.eventManager.callEvent(new UpdateEvent());
         
         //Update Portal Effects state (Vanilla)
 
@@ -382,15 +378,15 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
 
         if (isCurrentUsingItem) {
             final SlowDownEvent slowDownEvent = new SlowDownEvent(0.2F, 0.2F);
-            LiquidBounce.eventManager.callEvent(slowDownEvent);
+            FDPClient.eventManager.callEvent(slowDownEvent);
             this.movementInput.moveStrafe *= slowDownEvent.getStrafe();
             this.movementInput.moveForward *= slowDownEvent.getForward();
         }
-        
-        this.pushOutOfBlocks(this.posX - (double) this.width * 0.35D, this.getEntityBoundingBox().minY + 0.5D, this.posZ + (double) this.width * 0.35D);
-        this.pushOutOfBlocks(this.posX - (double) this.width * 0.35D, this.getEntityBoundingBox().minY + 0.5D, this.posZ - (double) this.width * 0.35D);
-        this.pushOutOfBlocks(this.posX + (double) this.width * 0.35D, this.getEntityBoundingBox().minY + 0.5D, this.posZ - (double) this.width * 0.35D);
-        this.pushOutOfBlocks(this.posX + (double) this.width * 0.35D, this.getEntityBoundingBox().minY + 0.5D, this.posZ + (double) this.width * 0.35D);
+
+        pushOutOfBlocks(posX - width * 0.35, getEntityBoundingBox().minY + 0.5, posZ + width * 0.35);
+        pushOutOfBlocks(posX - width * 0.35, getEntityBoundingBox().minY + 0.5, posZ - width * 0.35);
+        pushOutOfBlocks(posX + width * 0.35, getEntityBoundingBox().minY + 0.5, posZ - width * 0.35);
+        pushOutOfBlocks(posX + width * 0.35, getEntityBoundingBox().minY + 0.5, posZ + width * 0.35);
         
         if (!movingStat || runStrictStrafe || noStrafe) {
             isSprintDirection = this.movementInput.moveForward > 0.05f;
@@ -486,7 +482,7 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
     @Override
     public void moveEntity(double x, double y, double z) {
         MoveEvent moveEvent = new MoveEvent(x, y, z);
-        LiquidBounce.eventManager.callEvent(moveEvent);
+        FDPClient.eventManager.callEvent(moveEvent);
 
         if (moveEvent.isCancelled())
             return;
@@ -495,59 +491,62 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
         y = moveEvent.getY();
         z = moveEvent.getZ();
 
-        if (this.noClip) {
-            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x, y, z));
-            this.posX = (this.getEntityBoundingBox().minX + this.getEntityBoundingBox().maxX) / 2.0D;
-            this.posY = this.getEntityBoundingBox().minY;
-            this.posZ = (this.getEntityBoundingBox().minZ + this.getEntityBoundingBox().maxZ) / 2.0D;
+        if (noClip) {
+            setEntityBoundingBox(getEntityBoundingBox().offset(x, y, z));
+            posX = (getEntityBoundingBox().minX + getEntityBoundingBox().maxX) / 2;
+            posY = getEntityBoundingBox().minY;
+            posZ = (getEntityBoundingBox().minZ + getEntityBoundingBox().maxZ) / 2;
         } else {
-            this.worldObj.theProfiler.startSection("move");
-            double d0 = this.posX;
-            double d1 = this.posY;
-            double d2 = this.posZ;
+            worldObj.theProfiler.startSection("move");
+            double d0 = posX;
+            double d1 = posY;
+            double d2 = posZ;
 
             if (this.isInWeb) {
                 this.isInWeb = false;
-                x *= 0.25D;
-                y *= 0.05000000074505806D;
-                z *= 0.25D;
-                this.motionX = 0.0D;
-                this.motionY = 0.0D;
-                this.motionZ = 0.0D;
+                x *= 0.25;
+                y *= 0.05000000074505806;
+                z *= 0.25;
+                motionX = 0;
+                motionY = 0;
+                motionZ = 0;
             }
 
             double d3 = x;
             double d4 = y;
             double d5 = z;
-            boolean flag = this.onGround && this.isSneaking();
+            boolean flag = onGround && isSneaking();
 
             if (flag || moveEvent.isSafeWalk()) {
                 double d6;
 
-                for (d6 = 0.05D; x != 0.0D && this.worldObj.getCollidingBoundingBoxes((Entity) (Object) this, this.getEntityBoundingBox().offset(x, -1.0D, 0.0D)).isEmpty(); d3 = x) {
+                //noinspection ConstantConditions
+                for (d6 = 0.05; x != 0 && worldObj.getCollidingBoundingBoxes((Entity) (Object) this, getEntityBoundingBox().offset(x, -1, 0)).isEmpty(); d3 = x) {
                     if (x < d6 && x >= -d6) {
-                        x = 0.0D;
-                    } else if (x > 0.0D) {
+                        x = 0;
+                    } else if (x > 0) {
                         x -= d6;
                     } else {
                         x += d6;
                     }
                 }
 
-                for (; z != 0.0D && this.worldObj.getCollidingBoundingBoxes((Entity) (Object) this, this.getEntityBoundingBox().offset(0.0D, -1.0D, z)).isEmpty(); d5 = z) {
+                //noinspection ConstantConditions
+                for (; z != 0 && worldObj.getCollidingBoundingBoxes((Entity) (Object) this, getEntityBoundingBox().offset(0, -1, z)).isEmpty(); d5 = z) {
                     if (z < d6 && z >= -d6) {
-                        z = 0.0D;
-                    } else if (z > 0.0D) {
+                        z = 0;
+                    } else if (z > 0) {
                         z -= d6;
                     } else {
                         z += d6;
                     }
                 }
 
-                for (; x != 0.0D && z != 0.0D && this.worldObj.getCollidingBoundingBoxes((Entity) (Object) this, this.getEntityBoundingBox().offset(x, -1.0D, z)).isEmpty(); d5 = z) {
+                //noinspection ConstantConditions
+                for (; x != 0 && z != 0 && worldObj.getCollidingBoundingBoxes((Entity) (Object) this, getEntityBoundingBox().offset(x, -1, z)).isEmpty(); d5 = z) {
                     if (x < d6 && x >= -d6) {
-                        x = 0.0D;
-                    } else if (x > 0.0D) {
+                        x = 0;
+                    } else if (x > 0) {
                         x -= d6;
                     } else {
                         x += d6;
@@ -556,8 +555,8 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
                     d3 = x;
 
                     if (z < d6 && z >= -d6) {
-                        z = 0.0D;
-                    } else if (z > 0.0D) {
+                        z = 0;
+                    } else if (z > 0) {
                         z -= d6;
                     } else {
                         z += d6;
@@ -565,83 +564,85 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
                 }
             }
 
-            List<AxisAlignedBB> list1 = this.worldObj.getCollidingBoundingBoxes((Entity) (Object) this, this.getEntityBoundingBox().addCoord(x, y, z));
-            AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
+            // noinspection ConstantConditions
+            List<AxisAlignedBB> list1 = worldObj.getCollidingBoundingBoxes((Entity) (Object) this, getEntityBoundingBox().addCoord(x, y, z));
+            AxisAlignedBB axisalignedbb = getEntityBoundingBox();
 
             for (AxisAlignedBB axisalignedbb1 : list1) {
-                y = axisalignedbb1.calculateYOffset(this.getEntityBoundingBox(), y);
+                y = axisalignedbb1.calculateYOffset(getEntityBoundingBox(), y);
             }
 
-            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0.0D, y, 0.0D));
-            boolean flag1 = this.onGround || d4 != y && d4 < 0.0D;
+            setEntityBoundingBox(getEntityBoundingBox().offset(0, y, 0));
+            boolean flag1 = onGround || d4 != y && d4 < 0;
 
             for (AxisAlignedBB axisalignedbb2 : list1) {
-                x = axisalignedbb2.calculateXOffset(this.getEntityBoundingBox(), x);
+                x = axisalignedbb2.calculateXOffset(getEntityBoundingBox(), x);
             }
 
-            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x, 0.0D, 0.0D));
+            setEntityBoundingBox(getEntityBoundingBox().offset(x, 0, 0));
 
             for (AxisAlignedBB axisalignedbb13 : list1) {
-                z = axisalignedbb13.calculateZOffset(this.getEntityBoundingBox(), z);
+                z = axisalignedbb13.calculateZOffset(getEntityBoundingBox(), z);
             }
 
-            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0.0D, 0.0D, z));
+            setEntityBoundingBox(getEntityBoundingBox().offset(0, 0, z));
 
             if (this.stepHeight > 0.0F && flag1 && (d3 != x || d5 != z)) {
                 StepEvent stepEvent = new StepEvent(this.stepHeight, EventState.PRE);
-                LiquidBounce.eventManager.callEvent(stepEvent);
+                FDPClient.eventManager.callEvent(stepEvent);
                 double d11 = x;
                 double d7 = y;
                 double d8 = z;
-                AxisAlignedBB axisalignedbb3 = this.getEntityBoundingBox();
-                this.setEntityBoundingBox(axisalignedbb);
+                AxisAlignedBB axisalignedbb3 = getEntityBoundingBox();
+                setEntityBoundingBox(axisalignedbb);
                 y = stepEvent.getStepHeight();
-                List<AxisAlignedBB> list = this.worldObj.getCollidingBoundingBoxes((Entity) (Object) this, this.getEntityBoundingBox().addCoord(d3, y, d5));
-                AxisAlignedBB axisalignedbb4 = this.getEntityBoundingBox();
-                AxisAlignedBB axisalignedbb5 = axisalignedbb4.addCoord(d3, 0.0D, d5);
+                //noinspection ConstantConditions
+                List<AxisAlignedBB> list = worldObj.getCollidingBoundingBoxes((Entity) (Object) this, getEntityBoundingBox().addCoord(d3, y, d5));
+                AxisAlignedBB axisalignedbb4 = getEntityBoundingBox();
+                AxisAlignedBB axisalignedbb5 = axisalignedbb4.addCoord(d3, 0, d5);
                 double d9 = y;
 
                 for (AxisAlignedBB axisalignedbb6 : list) {
                     d9 = axisalignedbb6.calculateYOffset(axisalignedbb5, d9);
                 }
 
-                axisalignedbb4 = axisalignedbb4.offset(0.0D, d9, 0.0D);
+                axisalignedbb4 = axisalignedbb4.offset(0, d9, 0);
                 double d15 = d3;
 
                 for (AxisAlignedBB axisalignedbb7 : list) {
                     d15 = axisalignedbb7.calculateXOffset(axisalignedbb4, d15);
                 }
 
-                axisalignedbb4 = axisalignedbb4.offset(d15, 0.0D, 0.0D);
+                axisalignedbb4 = axisalignedbb4.offset(d15, 0, 0);
                 double d16 = d5;
 
                 for (AxisAlignedBB axisalignedbb8 : list) {
                     d16 = axisalignedbb8.calculateZOffset(axisalignedbb4, d16);
                 }
 
-                axisalignedbb4 = axisalignedbb4.offset(0.0D, 0.0D, d16);
-                AxisAlignedBB axisalignedbb14 = this.getEntityBoundingBox();
+                axisalignedbb4 = axisalignedbb4.offset(0, 0, d16);
+                AxisAlignedBB axisalignedbb14 = getEntityBoundingBox();
                 double d17 = y;
 
                 for (AxisAlignedBB axisalignedbb9 : list) {
                     d17 = axisalignedbb9.calculateYOffset(axisalignedbb14, d17);
                 }
 
-                axisalignedbb14 = axisalignedbb14.offset(0.0D, d17, 0.0D);
+                axisalignedbb14 = axisalignedbb14.offset(0, d17, 0);
                 double d18 = d3;
 
                 for (AxisAlignedBB axisalignedbb10 : list) {
                     d18 = axisalignedbb10.calculateXOffset(axisalignedbb14, d18);
                 }
 
-                axisalignedbb14 = axisalignedbb14.offset(d18, 0.0D, 0.0D);
+                axisalignedbb14 = axisalignedbb14.offset(d18, 0, 0);
                 double d19 = d5;
 
                 for (AxisAlignedBB axisalignedbb11 : list) {
                     d19 = axisalignedbb11.calculateZOffset(axisalignedbb14, d19);
                 }
 
-                axisalignedbb14 = axisalignedbb14.offset(0.0D, 0.0D, d19);
+                axisalignedbb14 = axisalignedbb14.offset(0, 0, d19);
                 double d20 = d15 * d15 + d16 * d16;
                 double d10 = d18 * d18 + d19 * d19;
 
@@ -649,47 +650,47 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
                     x = d15;
                     z = d16;
                     y = -d9;
-                    this.setEntityBoundingBox(axisalignedbb4);
+                    setEntityBoundingBox(axisalignedbb4);
                 } else {
                     x = d18;
                     z = d19;
                     y = -d17;
-                    this.setEntityBoundingBox(axisalignedbb14);
+                    setEntityBoundingBox(axisalignedbb14);
                 }
 
                 for (AxisAlignedBB axisalignedbb12 : list) {
-                    y = axisalignedbb12.calculateYOffset(this.getEntityBoundingBox(), y);
+                    y = axisalignedbb12.calculateYOffset(getEntityBoundingBox(), y);
                 }
 
-                this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0.0D, y, 0.0D));
+                setEntityBoundingBox(getEntityBoundingBox().offset(0, y, 0));
 
                 if (d11 * d11 + d8 * d8 >= x * x + z * z) {
                     x = d11;
                     y = d7;
                     z = d8;
-                    this.setEntityBoundingBox(axisalignedbb3);
+                    setEntityBoundingBox(axisalignedbb3);
                 } else {
-                    LiquidBounce.eventManager.callEvent(new StepEvent(-1f, EventState.POST));
+                    FDPClient.eventManager.callEvent(new StepEvent(-1f, EventState.POST));
                 }
             }
 
-            this.worldObj.theProfiler.endSection();
-            this.worldObj.theProfiler.startSection("rest");
-            this.posX = (this.getEntityBoundingBox().minX + this.getEntityBoundingBox().maxX) / 2.0D;
-            this.posY = this.getEntityBoundingBox().minY;
-            this.posZ = (this.getEntityBoundingBox().minZ + this.getEntityBoundingBox().maxZ) / 2.0D;
-            this.isCollidedHorizontally = d3 != x || d5 != z;
-            this.isCollidedVertically = d4 != y;
-            this.onGround = this.isCollidedVertically && d4 < 0.0D;
-            this.isCollided = this.isCollidedHorizontally || this.isCollidedVertically;
-            int i = MathHelper.floor_double(this.posX);
-            int j = MathHelper.floor_double(this.posY - 0.20000000298023224D);
-            int k = MathHelper.floor_double(this.posZ);
+            worldObj.theProfiler.endSection();
+            worldObj.theProfiler.startSection("rest");
+            posX = (getEntityBoundingBox().minX + getEntityBoundingBox().maxX) / 2;
+            posY = getEntityBoundingBox().minY;
+            posZ = (getEntityBoundingBox().minZ + getEntityBoundingBox().maxZ) / 2;
+            isCollidedHorizontally = d3 != x || d5 != z;
+            isCollidedVertically = d4 != y;
+            onGround = isCollidedVertically && d4 < 0;
+            isCollided = isCollidedHorizontally || isCollidedVertically;
+            int i = MathHelper.floor_double(posX);
+            int j = MathHelper.floor_double(posY - 0.20000000298023224);
+            int k = MathHelper.floor_double(posZ);
             BlockPos blockpos = new BlockPos(i, j, k);
-            Block block1 = this.worldObj.getBlockState(blockpos).getBlock();
+            Block block1 = worldObj.getBlockState(blockpos).getBlock();
 
             if (block1.getMaterial() == Material.air) {
-                Block block = this.worldObj.getBlockState(blockpos.down()).getBlock();
+                Block block = worldObj.getBlockState(blockpos.down()).getBlock();
 
                 if (block instanceof BlockFence || block instanceof BlockWall || block instanceof BlockFenceGate) {
                     block1 = block;
@@ -697,84 +698,86 @@ public abstract class MixinEntityPlayerSP extends MixinAbstractClientPlayer {
                 }
             }
 
-            this.updateFallState(y, this.onGround, block1, blockpos);
+            updateFallState(y, onGround, block1, blockpos);
 
             if (d3 != x) {
-                this.motionX = 0.0D;
+                motionX = 0;
             }
 
             if (d5 != z) {
-                this.motionZ = 0.0D;
+                motionZ = 0;
             }
 
             if (d4 != y) {
-                block1.onLanded(this.worldObj, (Entity) (Object) this);
+                //noinspection ConstantConditions
+                block1.onLanded(worldObj, (Entity) (Object) this);
             }
 
-            if (this.canTriggerWalking() && !flag && this.ridingEntity == null) {
-                double d12 = this.posX - d0;
-                double d13 = this.posY - d1;
-                double d14 = this.posZ - d2;
+            if (canTriggerWalking() && !flag && ridingEntity == null) {
+                double d12 = posX - d0;
+                double d13 = posY - d1;
+                double d14 = posZ - d2;
 
                 if (block1 != Blocks.ladder) {
-                    d13 = 0.0D;
+                    d13 = 0;
                 }
 
-                if (block1 != null && this.onGround) {
-                    block1.onEntityCollidedWithBlock(this.worldObj, blockpos, (Entity) (Object) this);
+                if (onGround) {
+                    //noinspection ConstantConditions
+                    block1.onEntityCollidedWithBlock(worldObj, blockpos, (Entity) (Object) this);
                 }
 
-                this.distanceWalkedModified = (float) ((double) this.distanceWalkedModified + (double) MathHelper.sqrt_double(d12 * d12 + d14 * d14) * 0.6D);
-                this.distanceWalkedOnStepModified = (float) ((double) this.distanceWalkedOnStepModified + (double) MathHelper.sqrt_double(d12 * d12 + d13 * d13 + d14 * d14) * 0.6D);
+                distanceWalkedModified = (float) (distanceWalkedModified + MathHelper.sqrt_double(d12 * d12 + d14 * d14) * 0.6);
+                distanceWalkedOnStepModified = (float) (distanceWalkedOnStepModified + MathHelper.sqrt_double(d12 * d12 + d13 * d13 + d14 * d14) * 0.6);
 
-                if (this.distanceWalkedOnStepModified > (float) getNextStepDistance() && block1.getMaterial() != Material.air) {
-                    setNextStepDistance((int) this.distanceWalkedOnStepModified + 1);
+                if (distanceWalkedOnStepModified > (float) getNextStepDistance() && block1.getMaterial() != Material.air) {
+                    setNextStepDistance((int) distanceWalkedOnStepModified + 1);
 
-                    if (this.isInWater()) {
-                        float f = MathHelper.sqrt_double(this.motionX * this.motionX * 0.20000000298023224D + this.motionY * this.motionY + this.motionZ * this.motionZ * 0.20000000298023224D) * 0.35F;
+                    if (isInWater()) {
+                        float f = MathHelper.sqrt_double(motionX * motionX * 0.20000000298023224 + motionY * motionY + motionZ * motionZ * 0.20000000298023224) * 0.35F;
 
-                        if (f > 1.0F) {
-                            f = 1.0F;
+                        if (f > 1f) {
+                            f = 1f;
                         }
 
-                        this.playSound(this.getSwimSound(), f, 1.0F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
+                        playSound(getSwimSound(), f, 1f + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
                     }
 
-                    this.playStepSound(blockpos, block1);
+                    playStepSound(blockpos, block1);
                 }
             }
 
             try {
-                this.doBlockCollisions();
+                doBlockCollisions();
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Checking entity block collision");
                 CrashReportCategory crashreportcategory = crashreport.makeCategory("Entity being checked for collision");
-                this.addEntityCrashInfo(crashreportcategory);
+                addEntityCrashInfo(crashreportcategory);
                 throw new ReportedException(crashreport);
             }
 
-            boolean flag2 = this.isWet();
+            boolean flag2 = isWet();
 
-            if (this.worldObj.isFlammableWithin(this.getEntityBoundingBox().contract(0.001D, 0.001D, 0.001D))) {
-                this.dealFireDamage(1);
+            if (worldObj.isFlammableWithin(getEntityBoundingBox().contract(0.001, 0.001, 0.001))) {
+                dealFireDamage(1);
 
                 if (!flag2) {
                     setFire(getFire() + 1);
 
                     if (getFire() == 0) {
-                        this.setFire(8);
+                        setFire(8);
                     }
                 }
             } else if (getFire() <= 0) {
-                setFire(-this.fireResistance);
+                setFire(-fireResistance);
             }
 
             if (flag2 && getFire() > 0) {
-                this.playSound("random.fizz", 0.7F, 1.6F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
-                setFire(-this.fireResistance);
+                playSound("random.fizz", 0.7F, 1.6F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
+                setFire(-fireResistance);
             }
 
-            this.worldObj.theProfiler.endSection();
+            worldObj.theProfiler.endSection();
         }
     }
 }

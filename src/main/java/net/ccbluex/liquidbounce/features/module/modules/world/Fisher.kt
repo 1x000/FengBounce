@@ -23,6 +23,7 @@ import net.minecraft.network.play.server.S29PacketSoundEffect
 @ModuleInfo(name = "Fisher", category = ModuleCategory.WORLD)
 object Fisher : Module() {
 
+
     private val detectionValue = ListValue("Detection", arrayOf("Motion", "Sound"), "Sound")
     private val recastValue = BoolValue("Recast", true)
     private val recastDelayValue = IntegerValue("RecastDelay", 1, 0, 1000).displayable { recastValue.get() }

@@ -1,3 +1,8 @@
+/*
+ * FDPClient Hacked Client
+ * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
+ * https://github.com/SkidderMC/FDPClient/
+ */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
 import net.ccbluex.liquidbounce.event.EventTarget
@@ -19,7 +24,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @ModuleInfo(name = "ChinaHat", category = ModuleCategory.RENDER)
-class ChinaHat : Module() {
+object ChinaHat : Module() {
 
     private val heightValue = FloatValue("Height", 0.3f, 0.1f, 0.7f)
     private val radiusValue = FloatValue("Radius", 0.7f, 0.3f, 1.5f)

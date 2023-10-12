@@ -10,4 +10,4 @@ import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 
 @ModuleInfo(name = "SilentDisconnect", category = ModuleCategory.MISC)
-class SilentDisconnect : Module()
+object SilentDisconnect : Module()

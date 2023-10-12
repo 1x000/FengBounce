@@ -5,13 +5,13 @@
  */
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.dropdown;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 
 import net.ccbluex.liquidbounce.ui.client.gui.ClickGUIModule;
 import net.ccbluex.liquidbounce.features.module.modules.client.HUD;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.fonts.impl.Fonts;
 import net.ccbluex.liquidbounce.utils.render.RenderUtils;
-import net.ccbluex.liquidbounce.utils.timer.Timer;
+import net.ccbluex.liquidbounce.utils.timer.TickTimer;
 import net.ccbluex.liquidbounce.features.value.TextValue;
 import net.ccbluex.liquidbounce.features.value.Value;
 import net.minecraft.client.Minecraft;
@@ -30,7 +30,7 @@ public class Module {
     public Tab tab;
     public boolean opened;
     public List<Setting> settings = new CopyOnWriteArrayList<>();
-    public Timer hoverTimer = new Timer();
+    public TickTimer hoverTimer = new TickTimer();
     public Module(net.ccbluex.liquidbounce.features.module.Module module, Tab tab) {
         this.module = module;
         this.tab = tab;
@@ -81,8 +81,8 @@ public class Module {
             }
         }
 
-        HUD hud = (HUD) LiquidBounce.moduleManager.getModule(HUD.class);
-        Color colorHUD = ClickGUIModule.generateColor();
+        HUD hud = (HUD) FDPClient.moduleManager.getModule(HUD.class);
+        Color colorHUD = ClickGUIModule.INSTANCE.generateColor();
         Color white = new Color(0xFFFFFF);
 
         if (colorHUD.getRed() > 220 && colorHUD.getBlue() > 220 && colorHUD.getGreen() > 220) {
@@ -169,8 +169,8 @@ public class Module {
                     break;
                 case 1:
                     if (!module.getValues().isEmpty()) {
-                        final ClickGUIModule clickGUI = (ClickGUIModule) LiquidBounce.moduleManager.getModule(ClickGUIModule.class);
-                        if (!opened && clickGUI.getClosePrevious.get())
+                        final ClickGUIModule clickGUI = (ClickGUIModule) FDPClient.moduleManager.getModule(ClickGUIModule.class);
+                        if (!opened && clickGUI.INSTANCE.getGetClosePrevious().get())
                             tab.modules.forEach(module -> {
                                 if (module.opened)
                                     module.opened = false;

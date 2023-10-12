@@ -1,8 +1,6 @@
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Settings;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
 import net.ccbluex.liquidbounce.ui.client.gui.ClickGUIModule;
-import net.ccbluex.liquidbounce.features.module.modules.client.HUD;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.*;
 import net.ccbluex.liquidbounce.ui.font.Fonts;
 import net.ccbluex.liquidbounce.utils.misc.Direction;
@@ -30,7 +28,7 @@ public class ListSetting extends Downward  {
     
     @Override
     public void draw(final int mouseX, final int mouseY) {
-        int guiColor = ClickGUIModule.generateColor().getRGB();
+        int guiColor = ClickGUIModule.INSTANCE.generateColor().getRGB();
         this.modulex = OtcClickGUi.getMainx();
         this.moduley = OtcClickGUi.getMainy();
         this.listy = this.pos.y + this.getScrollY();

@@ -13,7 +13,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.features.value.FloatValue
 
 @ModuleInfo(name = "FastBreak", category = ModuleCategory.WORLD)
-class FastBreak : Module() {
+object FastBreak : Module() {
 
     private val breakDamageValue = FloatValue("BreakDamage", 0.8F, 0.1F, 1F)
 

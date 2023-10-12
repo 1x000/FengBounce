@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.ClientShutdownEvent
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.UpdateEvent
@@ -19,7 +19,8 @@ import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
 
 @ModuleInfo(name = "AntiBlind", category = ModuleCategory.RENDER)
-class AntiBlind : Module() {
+object AntiBlind : Module() {
+
     val confusionEffectValue = BoolValue("Confusion", true)
     val pumpkinEffectValue = BoolValue("Pumpkin", true)
     val fireEffectValue = FloatValue("FireAlpha", 0.3f, 0f, 1f)
@@ -42,7 +43,7 @@ class AntiBlind : Module() {
 
     @EventTarget(ignoreCondition = true)
     fun onUpdate(event: UpdateEvent) {
-        if (state || LiquidBounce.moduleManager[XRay::class.java]!!.state) {
+        if (state || FDPClient.moduleManager[XRay::class.java]!!.state) {
             if(fullBrightValue.get()) {
                 when (fullBrightModeValue.get().lowercase()) {
                     "gamma" -> if (mc.gameSettings.gammaSetting <= 100f) mc.gameSettings.gammaSetting++

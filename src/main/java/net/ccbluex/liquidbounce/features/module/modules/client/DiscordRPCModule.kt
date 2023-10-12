@@ -13,10 +13,12 @@ import net.ccbluex.liquidbounce.features.value.*
 
 @ModuleInfo(name = "DiscordRPC", category = ModuleCategory.CLIENT)
 class DiscordRPCModule : Module() {
+
     val showServerValue = BoolValue("ShowServer", false)
     val showNameValue = BoolValue("ShowName", false)
-    val showHealthValue = BoolValue("ShowHealth", false)
+    val showHealthValue = BoolValue("ShowHealth", true)
     val showOtherValue = BoolValue("ShowOther", false)
+    val showModuleValue = BoolValue("ShowModule", false)
     val animated = BoolValue("ShouldAnimate?", true)
 
     override fun onEnable() {

@@ -1,3 +1,8 @@
+/*
+ * FDPClient Hacked Client
+ * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
+ * https://github.com/SkidderMC/FDPClient/
+ */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
 import net.ccbluex.liquidbounce.event.EntityDamageEvent
@@ -8,22 +13,17 @@ import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.ui.font.Fonts
-import net.ccbluex.liquidbounce.utils.ClientUtils
-import net.ccbluex.liquidbounce.utils.EntityUtils
 import net.ccbluex.liquidbounce.utils.MinecraftInstance
 import net.ccbluex.liquidbounce.utils.misc.RandomUtils
 import net.ccbluex.liquidbounce.utils.render.ColorUtils
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.EntityLivingBase
 import org.lwjgl.opengl.GL11
 import java.awt.Color
-import java.math.BigDecimal
-import java.util.*
 import kotlin.math.abs
 
 @ModuleInfo(name = "SuperheroFX", category = ModuleCategory.RENDER)
-class SuperheroFX : Module() {
+object SuperheroFX : Module() {
 
     private val textParticles = mutableListOf<FXParticle>()
     private val generateTimer = MSTimer()
@@ -63,7 +63,7 @@ class SuperheroFX : Module() {
     }
 
 }
-class FXParticle(val posX: Double, val posY: Double, val posZ: Double, val animHDir: Double, val animVDir: Double): MinecraftInstance() {
+class FXParticle(val posX: Double, val posY: Double, val posZ: Double, private val animHDir: Double, private val animVDir: Double): MinecraftInstance() {
     private val messageString: String = listOf("kaboom", "bam", "zap", "smash", "fatality", "kapow", "wham").random()
     private val color: Color = listOf(Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW).random()
 

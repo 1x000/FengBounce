@@ -5,9 +5,8 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
-import net.ccbluex.liquidbounce.features.module.EnumAutoDisableType
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
@@ -19,13 +18,13 @@ import net.ccbluex.liquidbounce.features.value.IntegerValue
 import net.ccbluex.liquidbounce.features.value.ListValue
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.minecraft.network.play.server.S12PacketEntityVelocity
-import org.lwjgl.input.Keyboard
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 @ModuleInfo(name = "Velocity", category = ModuleCategory.COMBAT)
-class Velocity : Module() {
+object Velocity : Module() {
+
     private val modes = ClassUtils.resolvePackage("${this.javaClass.`package`.name}.velocitys", VelocityMode::class.java)
         .map { it.newInstance() as VelocityMode }
         .sortedBy { it.modeName }
@@ -97,7 +96,7 @@ class Velocity : Module() {
             return
         }
 
-        if ((onlyGroundValue.get() && !mc.thePlayer.onGround) || (onlyCombatValue.get() && !LiquidBounce.combatManager.inCombat)) {
+        if ((onlyGroundValue.get() && !mc.thePlayer.onGround) || (onlyCombatValue.get() && !FDPClient.combatManager.inCombat)) {
             return
         }
         if (noFireValue.get() && mc.thePlayer.isBurning) return
@@ -108,6 +107,11 @@ class Velocity : Module() {
     fun onMotion(event: MotionEvent) {
         mode.onMotion(event)
     }
+    
+    @EventTarget
+    fun onAttack(event: AttackEvent) {
+        mode.onAttack(event)
+    }
 
     @EventTarget
     fun onStrafe(event: StrafeEvent){
@@ -117,7 +121,7 @@ class Velocity : Module() {
     @EventTarget
     fun onPacket(event: PacketEvent) {
         mode.onPacket(event)
-        if ((onlyGroundValue.get() && !mc.thePlayer.onGround) || (onlyCombatValue.get() && !LiquidBounce.combatManager.inCombat)) {
+        if ((onlyGroundValue.get() && !mc.thePlayer.onGround) || (onlyCombatValue.get() && !FDPClient.combatManager.inCombat)) {
             return
         }
 
@@ -175,9 +179,14 @@ class Velocity : Module() {
     fun onStep(event: StepEvent) {
         mode.onStep(event)
     }
+
+    @EventTarget
+    fun onTick(event: TickEvent) {
+        mode.onTick(event)
+    }
     override val tag: String
         get() = if (modeValue.get() == "Simple")
-            "${horizontalValue.get()}% ${verticalValue.get()}% ${chanceValue.get()}%"
+            "${(horizontalValue.get() * 100).toInt()}% ${(verticalValue.get() * 100).toInt()}% ${chanceValue.get()}%"
         else
             modeValue.get()
 

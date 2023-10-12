@@ -23,7 +23,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @ModuleInfo(name = "BoatJump", category = ModuleCategory.MOVEMENT)
-class BoatJump : Module() {
+object BoatJump : Module() {
+
     private val modeValue = ListValue("Mode", arrayOf("Boost", "Launch", "Matrix"), "Boost")
     private val hBoostValue = FloatValue("HBoost", 2f, 0f, 6f)
     private val vBoostValue = FloatValue("VBoost", 2f, 0f, 6f)

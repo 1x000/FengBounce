@@ -11,7 +11,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.ui.client.hud.designer.GuiHudDesigner
 
 @ModuleInfo(name = "HudDesigner", category = ModuleCategory.CLIENT, canEnable = false)
-class HudDesigner : Module() {
+object HudDesigner : Module() {
     override fun onEnable() {
         mc.displayGuiScreen(GuiHudDesigner())
     }

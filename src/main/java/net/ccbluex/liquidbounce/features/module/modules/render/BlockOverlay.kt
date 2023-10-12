@@ -26,7 +26,8 @@ import org.lwjgl.opengl.GL11
 import java.awt.Color
 
 @ModuleInfo(name = "BlockOverlay", category = ModuleCategory.RENDER)
-class BlockOverlay : Module() {
+object BlockOverlay : Module() {
+
     private val colorRedValue = IntegerValue("Red", 68, 0, 255).displayable { !colorRainbowValue.get() }
     private val colorGreenValue = IntegerValue("Green", 117, 0, 255).displayable { !colorRainbowValue.get() }
     private val colorBlueValue = IntegerValue("Blue", 255, 0, 255).displayable { !colorRainbowValue.get() }

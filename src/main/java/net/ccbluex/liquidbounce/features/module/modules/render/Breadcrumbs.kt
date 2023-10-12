@@ -26,7 +26,8 @@ import org.lwjgl.util.glu.Sphere
 import java.awt.Color
 
 @ModuleInfo(name = "Breadcrumbs", category = ModuleCategory.RENDER)
-class Breadcrumbs : Module() {
+object Breadcrumbs : Module() {
+
     private val typeValue = ListValue("Type", arrayOf("Line", "Rect", "Sphere", "Rise"), "Line")
     private val colorRedValue = IntegerValue("R", 255, 0, 255).displayable { !colorRainbowValue.get() }
     private val colorGreenValue = IntegerValue("G", 255, 0, 255).displayable { !colorRainbowValue.get() }
@@ -127,24 +128,24 @@ class Breadcrumbs : Module() {
                     "rise" -> {
                         
                         val circleScale = sphereScaleValue.get()
-                        RenderUtils.glColor(point.color, 30)
+                        RenderUtils.glColor(point.color, 38)
                         GL11.glPushMatrix()
                         GL11.glTranslated(point.x - renderPosX, point.y - renderPosY, point.z - renderPosZ)
-                        GL11.glScalef(circleScale * 1.3f, circleScale * 1.3f, circleScale * 1.3f)
+                        GL11.glScalef(circleScale * 2.3f, circleScale * 2.3f, circleScale * 2.3f)
                         GL11.glCallList(sphereList)
                         GL11.glPopMatrix()
 
-                        RenderUtils.glColor(point.color, 50)
+                        RenderUtils.glColor(point.color, 63)
                         GL11.glPushMatrix()
                         GL11.glTranslated(point.x - renderPosX, point.y - renderPosY, point.z - renderPosZ)
-                        GL11.glScalef(circleScale * 0.8f, circleScale * 0.8f, circleScale * 0.8f)
+                        GL11.glScalef(circleScale * 1.4f, circleScale * 1.4f, circleScale * 1.4f)
                         GL11.glCallList(sphereList)
                         GL11.glPopMatrix()
 
-                        RenderUtils.glColor(point.color, alpha)
+                        RenderUtils.glColor(point.color, 153)
                         GL11.glPushMatrix()
                         GL11.glTranslated(point.x - renderPosX, point.y - renderPosY, point.z - renderPosZ)
-                        GL11.glScalef(circleScale * 0.4f, circleScale * 0.4f, circleScale * 0.4f)
+                        GL11.glScalef(circleScale * 0.7f, circleScale * 0.7f, circleScale * 0.7f)
                         GL11.glCallList(sphereList)
                         GL11.glPopMatrix()
 

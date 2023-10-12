@@ -1,11 +1,7 @@
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Settings;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
 import net.ccbluex.liquidbounce.ui.client.gui.ClickGUIModule;
-import net.ccbluex.liquidbounce.features.module.modules.client.HUD;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.*;
-import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Settings.*;
-import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Utils.Position;
 import net.ccbluex.liquidbounce.ui.font.Fonts;
 import net.ccbluex.liquidbounce.utils.render.RenderUtils;
 import net.ccbluex.liquidbounce.features.value.TextValue;
@@ -27,7 +23,7 @@ public class TextSetting extends Downward<TextValue>  {
     
     @Override
     public void draw(final int mouseX, final int mouseY) {
-        int guiColor = ClickGUIModule.generateColor().getRGB();
+        int guiColor = ClickGUIModule.INSTANCE.generateColor().getRGB();
         this.modulex = OtcClickGUi.getMainx();
         this.moduley = OtcClickGUi.getMainy();
         this.texty = this.pos.y + this.getScrollY();

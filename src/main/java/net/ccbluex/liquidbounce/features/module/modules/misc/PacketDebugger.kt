@@ -22,7 +22,7 @@ import net.minecraft.network.status.client.*
 import net.minecraft.network.status.server.*
 
 @ModuleInfo(name = "PacketDebugger", category = ModuleCategory.MISC)
-class PacketDebugger : Module() {
+object PacketDebugger : Module() {
 
     private val printFieldsValue = BoolValue("PrintFields",true)
     private val printTimeValue = BoolValue("PrintTime",true)

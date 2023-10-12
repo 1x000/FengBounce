@@ -27,7 +27,8 @@ import net.minecraft.util.BlockPos
 import java.awt.Color
 
 @ModuleInfo(name = "BlockESP", category = ModuleCategory.RENDER)
-class BlockESP : Module() {
+object BlockESP : Module() {
+
     private val modeValue = ListValue("Mode", arrayOf("Box", "OtherBox", "Outline", "2D"), "Box")
     private val outlineWidthValue = FloatValue("Outline-Width", 3f, 0.5f, 5f).displayable { modeValue.equals("Outline") }
     private val blockValue = BlockValue("Block", 168)

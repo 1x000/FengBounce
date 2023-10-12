@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.AttackEvent
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.Render3DEvent
@@ -18,7 +18,6 @@ import net.ccbluex.liquidbounce.features.module.modules.movement.Step
 import net.ccbluex.liquidbounce.features.value.BoolValue
 import net.ccbluex.liquidbounce.features.value.FloatValue
 import net.ccbluex.liquidbounce.features.value.ListValue
-import net.ccbluex.liquidbounce.font.FontLoaders
 import net.ccbluex.liquidbounce.ui.client.hud.element.elements.Notification
 import net.ccbluex.liquidbounce.ui.client.hud.element.elements.NotifyType
 import net.ccbluex.liquidbounce.utils.*
@@ -30,7 +29,6 @@ import net.minecraft.entity.boss.EntityWither
 import net.minecraft.util.MathHelper
 import net.minecraft.util.Vec3
 import org.lwjgl.opengl.GL11
-import java.awt.Color
 import kotlin.concurrent.thread
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -38,7 +36,8 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 @ModuleInfo(name = "FightBot", category = ModuleCategory.COMBAT)
-class FightBot : Module() {
+object FightBot : Module() {
+
     private val pathRenderValue = BoolValue("PathRender", true)
     private val jumpResetValue = BoolValue("JumpReset", true)
     private val autoJumpValue = BoolValue("AutoJump", false)
@@ -57,14 +56,14 @@ class FightBot : Module() {
     private var thread: Thread? = null
     private var backThread: Thread? = null
     override fun onEnable() {
-        if (!autoJumpValue.get()) LiquidBounce.moduleManager[Step::class.java]!!.state = true
-        if (!autoJumpValue.get()) LiquidBounce.moduleManager[Step::class.java]!!.modeValue.set("Jump")
+        if (!autoJumpValue.get()) FDPClient.moduleManager[Step::class.java]!!.state = true
+        if (!autoJumpValue.get()) FDPClient.moduleManager[Step::class.java]!!.modeValue.set("Jump")
         if (findWay.get().contains("Point")) mainPos =
             floatArrayOf(mc.thePlayer.posX.toFloat(), mc.thePlayer.posY.toFloat(), mc.thePlayer.posZ.toFloat())
     }
 
     override fun onDisable() {
-        if (!autoJumpValue.get()) LiquidBounce.moduleManager[Step::class.java]!!.state = false
+        if (!autoJumpValue.get()) FDPClient.moduleManager[Step::class.java]!!.state = false
         thread?.stop()
         backThread?.stop()
         mc.gameSettings.keyBindForward.pressed = false
@@ -113,7 +112,7 @@ class FightBot : Module() {
             witherTargets.clear()
             if (findWay.get().lowercase().contains("entity") && findWither() == null) {
                 this.state = false
-                LiquidBounce.hud.addNotification(
+                FDPClient.hud.addNotification(
                     Notification(
                         "FightBot",
                         "Cant find wither",
@@ -124,7 +123,7 @@ class FightBot : Module() {
                 )
                 return
             }
-            val teams = LiquidBounce.moduleManager[Teams::class.java]!!
+            val teams = FDPClient.moduleManager[Teams::class.java]!!
             for (entity in mc.theWorld.loadedEntityList) {
                 if (entity is EntityLivingBase) {
                     if (entity != mc.thePlayer) {

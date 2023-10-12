@@ -22,7 +22,6 @@ import net.ccbluex.liquidbounce.features.value.BoolValue
 import net.ccbluex.liquidbounce.features.value.FloatValue
 import net.ccbluex.liquidbounce.features.value.IntegerValue
 import net.ccbluex.liquidbounce.features.value.ListValue
-import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiIngame
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
@@ -39,13 +38,13 @@ import kotlin.math.max
 
 @ModuleInfo(name = "Hotbar", category = ModuleCategory.CLIENT, array = false, defaultOn = true)
 object HotbarSettings : Module() {
-    val hotbarValue = ListValue("HotbarMode", arrayOf("Minecraft", "Rounded", "Full", "LB", "Rise", "Gradient", "Overflow", "Glow", "Glowing", "Dock", "Exhi", "BlueIce", "Win11", "Bread"), "Rounded")
-    val hotbarAlphaValue = IntegerValue("HotbarAlpha", 70, 0, 255)
-    val hotbarEaseValue = BoolValue("HotbarEase", true)
+    val hotbarValue = ListValue("HotbarMode", arrayOf("Minecraft", "Rounded", "Full", "LB", "Rise", "Gradient", "Overflow", "Glow", "Glowing", "Dock", "Exhi", "BlueIce", "Win11", "Bread"), "Minecraft")
+    private val hotbarAlphaValue = IntegerValue("HotbarAlpha", 70, 0, 255)
+    private val hotbarEaseValue = BoolValue("HotbarEase", true)
     private val BlurValue = BoolValue("Blur", false)
     private val BlurAmount = FloatValue("BlurAmount", 10F, 1F, 100F).displayable { BlurValue.get() }
     private val ItemCountValue = BoolValue("ItemColorCount", false)
-    val ItemFontValue = ListValue("ItemFont", arrayOf("MiSans", "Minecraft"), "Minecraft")
+    private val ItemFontValue = ListValue("ItemFont", arrayOf("MiSans", "Minecraft"), "Minecraft")
     private val hotbarAnimSpeedValue = IntegerValue("HotbarAnimSpeed", 10, 5, 20).displayable { hotbarEaseValue.get() }
     private val hotbarAnimTypeValue = EaseUtils.getEnumEasingList("HotbarAnimType").displayable { hotbarEaseValue.get() }
     private val hotbarAnimOrderValue = EaseUtils.getEnumEasingOrderList("HotbarAnimOrder").displayable { hotbarEaseValue.get() }
@@ -102,7 +101,7 @@ object HotbarSettings : Module() {
                 RenderUtils.drawRect(itemX.toFloat(), (sr.scaledHeight - 22).toFloat(), (itemX + 22).toFloat(), (sr.scaledHeight - 21).toFloat(), rainbow())
                 RenderUtils.drawRect(itemX.toFloat(), (sr.scaledHeight - 21).toFloat(), (itemX + 22).toFloat(), sr.scaledHeight.toFloat(), Color(0, 0, 0, hotbarAlphaValue.get()))
                 RenderHelper.enableGUIStandardItemLighting()
-                for (Index in 0..8) { HotbarItems(Index, sr.scaledWidth / 2 - 90 + Index * 20 + 2, sr.scaledHeight - 19); HotbarTextOverlay(sr.scaledWidth / 2 - 90 + Index * 20 + 2, sr.scaledHeight - 19, null as String?, Index) }
+                for (Index: Int in 0..8) { HotbarItems(Index, sr.scaledWidth / 2 - 90 + Index * 20 + 2, sr.scaledHeight - 19); HotbarTextOverlay(sr.scaledWidth / 2 - 90 + Index * 20 + 2, sr.scaledHeight - 19, null as String?, Index) }
                 RenderHelper.disableStandardItemLighting()
             }
             hotbarValue.get() == "Full" -> {
@@ -182,12 +181,16 @@ object HotbarSettings : Module() {
                 GlStateManager.pushMatrix()
                 for (item in 0..8) {
                     var height = sr.scaledHeight - 19
-                    if (item == entityplayer.inventory.currentItem) {
-                        height = sr.scaledHeight - 23
-                    } else if (item == entityplayer.inventory.currentItem + 1 || item == entityplayer.inventory.currentItem - 1) {
-                        height = sr.scaledHeight - 21
-                    } else if (item == entityplayer.inventory.currentItem + 2 || item == entityplayer.inventory.currentItem - 2) {
-                        height = sr.scaledHeight - 20
+                    when (item) {
+                        entityplayer.inventory.currentItem -> {
+                            height = sr.scaledHeight - 23
+                        }
+                        entityplayer.inventory.currentItem + 1, entityplayer.inventory.currentItem - 1 -> {
+                            height = sr.scaledHeight - 21
+                        }
+                        entityplayer.inventory.currentItem + 2, entityplayer.inventory.currentItem - 2 -> {
+                            height = sr.scaledHeight - 20
+                        }
                     }
                     HotbarItems(item, sr.scaledWidth / 2 - 90 + item * 20 + 2, height)
                     HotbarTextOverlay(sr.scaledWidth / 2 - 90 + item * 20 + 2, height, null as String?, item)
@@ -214,8 +217,6 @@ object HotbarSettings : Module() {
         GlStateManager.disableBlend()
     }
 
-
-    // Mojang ©2009-2022
     fun HotbarItems(index: Int, xPos: Int, yPos: Int) {
         val entityplayer = mc.renderViewEntity as EntityPlayer
         val itemstack = entityplayer.inventory.mainInventory[index]
@@ -246,8 +247,7 @@ object HotbarSettings : Module() {
             HotbarTextOverlay(xPos, yPos, null as String?, index)
         }
     }
-
-    fun HotbarDurabilityOverlay(stack: ItemStack?, xPosition: Int, yPosition: Int) {
+    private fun HotbarDurabilityOverlay(stack: ItemStack?, xPosition: Int, yPosition: Int) {
         if (stack != null) {
             if (stack.item.showDurabilityBar(stack)) {
                 GlStateManager.disableTexture2D()
@@ -260,8 +260,7 @@ object HotbarSettings : Module() {
             }
         }
     }
-
-    fun HotbarTextOverlay(xPosition: Int, yPosition: Int, text: String?, index: Int) {
+    private fun HotbarTextOverlay(xPosition: Int, yPosition: Int, text: String?, index: Int) {
         val entityplayer = mc.renderViewEntity as EntityPlayer
         val stack = entityplayer.inventory.mainInventory[index]
         if (stack != null) {
@@ -329,12 +328,9 @@ object HotbarSettings : Module() {
                 ).start()
             }
         }
-
     fun getHotbarEasePos(x: Int): Int {
         if (!hotbarEaseValue.get()) return x
         easingValue = x
         return easingValue
-
-
     }
 }

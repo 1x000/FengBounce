@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.ui.font
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.TextEvent
 import net.ccbluex.liquidbounce.features.module.modules.client.HUD
 import net.ccbluex.liquidbounce.ui.i18n.LanguageManager
@@ -22,7 +22,8 @@ import org.lwjgl.opengl.GL20
 import java.awt.Color
 import java.awt.Font
 
-class GameFontRenderer(font: Font) : FontRenderer(Minecraft.getMinecraft().gameSettings,
+class
+GameFontRenderer(font: Font) : FontRenderer(Minecraft.getMinecraft().gameSettings,
     ResourceLocation("textures/font/ascii.png"), Minecraft.getMinecraft().textureManager, false) {
 
     var defaultFont = AWTFontRenderer(font)
@@ -63,7 +64,7 @@ class GameFontRenderer(font: Font) : FontRenderer(Minecraft.getMinecraft().gameS
         var currentText = TranslatedCurrentText
 
         val event = TextEvent(currentText)
-        LiquidBounce.eventManager.callEvent(event)
+        FDPClient.eventManager.callEvent(event)
         currentText = event.text ?: return 0
 
         val currY = y - 3F
@@ -328,7 +329,7 @@ class GameFontRenderer(font: Font) : FontRenderer(Minecraft.getMinecraft().gameS
 
 
         val event = TextEvent(currentText)
-        LiquidBounce.eventManager.callEvent(event)
+        FDPClient.eventManager.callEvent(event)
         currentText = event.text ?: return 0
 
         return if (currentText.contains("§")) {

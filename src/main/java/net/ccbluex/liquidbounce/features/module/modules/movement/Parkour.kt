@@ -13,7 +13,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.utils.MovementUtils
 
 @ModuleInfo(name = "Parkour", category = ModuleCategory.MOVEMENT)
-class Parkour : Module() {
+object Parkour : Module() {
 
     @EventTarget
     fun onUpdate(event: UpdateEvent) {

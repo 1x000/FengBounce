@@ -1,12 +1,12 @@
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Settings;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 import net.ccbluex.liquidbounce.ui.client.gui.ClickGUIModule;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Downward;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.ModuleRender;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.OtcClickGUi;
 import net.ccbluex.liquidbounce.ui.font.Fonts;
-import net.ccbluex.liquidbounce.utils.math.MathUtils;
+import net.ccbluex.liquidbounce.utils.MathUtils;
 import net.ccbluex.liquidbounce.utils.render.RenderUtils;
 import net.ccbluex.liquidbounce.utils.render.RoundedUtil;
 import net.ccbluex.liquidbounce.features.value.FloatValue;
@@ -30,7 +30,7 @@ public class FloatSetting extends Downward<FloatValue> {
 
     @Override
     public void draw(final int mouseX, final int mouseY) {
-        int guiColor = ClickGUIModule.generateColor().getRGB();
+        int guiColor = ClickGUIModule.INSTANCE.generateColor().getRGB();
         this.modulex = OtcClickGUi.getMainx();
         this.moduley = OtcClickGUi.getMainy();
         this.numbery = this.pos.y + this.getScrollY();
@@ -44,11 +44,11 @@ public class FloatSetting extends Downward<FloatValue> {
         if (this.iloveyou) {
             final float percentt = Math.min(1.0f, Math.max(0.0f, (mouseX - (this.modulex + 5.0f + this.pos.x + 55.0f)) / 99.0f * 1.3f));
             final double newValue = percentt * (((FloatValue)this.setting).getMaximum() - ((FloatValue)this.setting).getMinimum()) + ((FloatValue)this.setting).getMinimum();
-            final double set = MathUtils.incValue(newValue, 0.1);
+            final double set = MathUtils.INSTANCE.incValue(newValue, 0.1);
             ((FloatValue)this.setting).set(set);
         }
-        final ClickGUIModule cg = (ClickGUIModule)LiquidBounce.moduleManager.getModule(ClickGUIModule.class);
-        if (this.iloveyou || this.isHovered(mouseX, mouseY) || cg.disp.get()) {
+        final ClickGUIModule cg = (ClickGUIModule) FDPClient.moduleManager.getModule(ClickGUIModule.class);
+        if (this.iloveyou || this.isHovered(mouseX, mouseY) || cg.INSTANCE.getDisp().get()) {
             RoundedUtil.drawRound(this.modulex + 5.0f + this.pos.x + 55.0f + 61.0f * this.percent, this.moduley + 17.0f + this.numbery + 8.0f + 6.0f, (float)(Fonts.fontTahoma.getStringWidth(((Value<?>)this.setting).get() + "") + 2), 6.0f, 1.0f, new Color(32, 34, 39));
             Fonts.fontTahoma.drawString(((Value<?>)this.setting).get() + "", this.modulex + 5.0f + this.pos.x + 55.0f + 62.0f * this.percent, this.moduley + 17.0f + this.numbery + 8.0f + 8.0f, new Color(250, 250, 250).getRGB());
         }

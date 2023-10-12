@@ -29,7 +29,7 @@ import net.minecraft.util.MathHelper
 import java.util.*
 
 @ModuleInfo(name = "Gapple", category = ModuleCategory.PLAYER)
-class Gapple : Module() {
+object Gapple : Module() {
 
     private val modeValue = ListValue("Mode", arrayOf("Auto", "LegitAuto", "Legit", "Head"), "Auto")
     private val percent = FloatValue("HealthPercent", 75.0f, 1.0f, 100.0f)

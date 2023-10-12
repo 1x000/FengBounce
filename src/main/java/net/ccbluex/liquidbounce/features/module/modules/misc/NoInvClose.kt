@@ -14,7 +14,7 @@ import net.minecraft.network.play.server.S2EPacketCloseWindow
 import net.minecraft.client.gui.inventory.GuiInventory
 
 @ModuleInfo(name = "NoInvClose", category = ModuleCategory.MISC)
-class NoInvClose : Module() {
+object NoInvClose : Module() {
     @EventTarget
     fun onPacket(event: PacketEvent){
         if (mc.theWorld == null || mc.thePlayer == null) return

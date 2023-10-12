@@ -23,7 +23,8 @@ import net.minecraft.network.play.server.S08PacketPlayerPosLook
 import net.minecraft.network.play.server.S0BPacketAnimation
 
 @ModuleInfo(name = "Criticals", category = ModuleCategory.COMBAT, autoDisable = EnumAutoDisableType.FLAG)
-class Criticals : Module() {
+object Criticals : Module() {
+
     private val modes = ClassUtils.resolvePackage("${this.javaClass.`package`.name}.criticals", CriticalMode::class.java)
         .map { it.newInstance() as CriticalMode }
         .sortedBy { it.modeName }
@@ -211,11 +212,6 @@ class Criticals : Module() {
         }
     }
 
-
-        /**
-     * 读取mode中的value并和本体中的value合并
-     * 所有的value必须在这个之前初始化
-     */
     override val values = super.values.toMutableList().also {
         modes.map {
             mode -> mode.values.forEach { value ->

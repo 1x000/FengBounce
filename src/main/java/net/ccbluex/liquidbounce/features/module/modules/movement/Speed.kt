@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.movement
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.EnumAutoDisableType
 import net.ccbluex.liquidbounce.features.module.Module
@@ -18,8 +18,9 @@ import net.ccbluex.liquidbounce.features.value.BoolValue
 import net.ccbluex.liquidbounce.features.value.ListValue
 import org.lwjgl.input.Keyboard
 
-@ModuleInfo(name = "Speed", category = ModuleCategory.MOVEMENT, autoDisable = EnumAutoDisableType.FLAG, keyBind = Keyboard.KEY_V)
-class Speed : Module() {
+@ModuleInfo(name = "Speed", category = ModuleCategory.MOVEMENT, autoDisable = EnumAutoDisableType.FLAG, keyBind = Keyboard.KEY_X)
+object Speed : Module() {
+
     private val modes = ClassUtils.resolvePackage("${this.javaClass.`package`.name}.speeds", SpeedMode::class.java)
             .map { it.newInstance() as SpeedMode }
             .sortedBy { it.modeName }
@@ -70,7 +71,7 @@ class Speed : Module() {
         }
 
         mode.onMove(event)
-        LiquidBounce.moduleManager[TargetStrafe::class.java]!!.doMove(event)
+        FDPClient.moduleManager[TargetStrafe::class.java]!!.doMove(event)
     }
 
     @EventTarget

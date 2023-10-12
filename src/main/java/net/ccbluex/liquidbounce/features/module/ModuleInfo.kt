@@ -5,7 +5,6 @@
  */
 package net.ccbluex.liquidbounce.features.module
 
-import net.ccbluex.liquidbounce.ui.i18n.LanguageManager
 import org.lwjgl.input.Keyboard
 
 @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)

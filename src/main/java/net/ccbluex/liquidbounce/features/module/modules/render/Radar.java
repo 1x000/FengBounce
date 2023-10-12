@@ -23,8 +23,7 @@ import org.lwjgl.input.Mouse;
 import java.awt.*;
 
 @ModuleInfo(name = "Radar", category = ModuleCategory.RENDER)
-public class Radar extends Module
-{
+public class Radar extends Module {
     private boolean dragging;
     float hue;
     public final FloatValue scale = new FloatValue("scale",2.0f, 1.0f, 3.0f);

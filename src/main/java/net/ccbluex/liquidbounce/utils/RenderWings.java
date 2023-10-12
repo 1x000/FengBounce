@@ -1,6 +1,11 @@
+/*
+ * FDPClient Hacked Client
+ * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
+ * https://github.com/SkidderMC/FDPClient/
+ */
 package net.ccbluex.liquidbounce.utils;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 import net.ccbluex.liquidbounce.features.module.modules.client.Wings;
 import net.ccbluex.liquidbounce.utils.render.ColorUtils;
 import net.ccbluex.liquidbounce.utils.render.RenderUtils;
@@ -18,7 +23,7 @@ public class RenderWings extends ModelBase {
     private final ModelRenderer wing;
     private final ModelRenderer wingTip;
     private final boolean playerUsesFullHeight;
-    final Wings Wings = LiquidBounce.moduleManager.getModule(Wings.class);
+    final Wings Wings = FDPClient.moduleManager.getModule(Wings.class);
     String WingMode = Wings.getWingStyle().get();
 
     public RenderWings() {

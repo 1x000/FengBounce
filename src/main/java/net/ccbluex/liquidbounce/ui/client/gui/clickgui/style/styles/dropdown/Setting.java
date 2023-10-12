@@ -5,13 +5,13 @@
  */
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.dropdown;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 import net.ccbluex.liquidbounce.ui.client.gui.ClickGUIModule;
 import net.ccbluex.liquidbounce.features.module.modules.client.HUD;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.fonts.impl.Fonts;
-import net.ccbluex.liquidbounce.utils.math.MathUtils;
+import net.ccbluex.liquidbounce.utils.MathUtils;
 import net.ccbluex.liquidbounce.utils.render.RenderUtils;
-import net.ccbluex.liquidbounce.utils.timer.Timer;
+import net.ccbluex.liquidbounce.utils.timer.TickTimer;
 import net.ccbluex.liquidbounce.features.value.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -26,8 +26,8 @@ public class Setting {
     public Value setting;
     private Module module;
     public boolean opened;
-    private final Timer backSpace = new Timer();
-    private final Timer caretTimer = new Timer();
+    private final TickTimer backSpace = new TickTimer();
+    private final TickTimer caretTimer = new TickTimer();
     public int height;
     public float percent = 0;
 
@@ -42,7 +42,7 @@ public class Setting {
 
     public void drawScreen(int mouseX, int mouseY) {
         int y = getY();
-        HUD hud = (HUD) LiquidBounce.moduleManager.getModule(HUD.class);
+        HUD hud = (HUD) FDPClient.moduleManager.getModule(HUD.class);
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
         boolean scissor = scaledResolution.getScaleFactor() != 1;
         double clamp = MathHelper.clamp_double(Minecraft.getMinecraft().getDebugFPS() / 30, 1, 9999);
@@ -62,14 +62,14 @@ public class Setting {
 
             percent = Math.max(0, Math.min(1, (float) (percent + (Math.max(0, Math.min(percentBar, 1)) - percent) * (0.2 / clamp))));
             RenderUtils.drawRect(module.tab.getPosX() + 1, y + 3, module.tab.getPosX() + 99, y + 14, new Color(0, 0, 0, 50).getRGB());
-            RenderUtils.drawRect(module.tab.getPosX() + 1, y + 3, module.tab.getPosX() + 1 + 98 * percent, y + 14, ClickGUIModule.generateColor());
+            RenderUtils.drawRect(module.tab.getPosX() + 1, y + 3, module.tab.getPosX() + 1 + 98 * percent, y + 14, ClickGUIModule.INSTANCE.generateColor());
             Fonts.SF.SF_18.SF_18.drawString(numberValue.getName() + " " + rounded, module.tab.getPosX() + 4, y + 5.5f, 0xffffffff, true);
 
             if (this.dragging) {
                 double difference = numberValue.getMaximum() - numberValue.getMinimum();
                 double value = numberValue.getMinimum() +
                         MathHelper.clamp_double((mouseX - (module.tab.getPosX() + 1)) / 99, 0, 1) * difference;
-                double set = MathUtils.incValue(value,0.01);
+                double set = MathUtils.INSTANCE.incValue(value,0.01);
 
                 numberValue.set(set);
              //   EventManager.call(new SettingEvent(module.getModule(), setting.getName(), setting.getSliderNumber()));
@@ -95,14 +95,14 @@ public class Setting {
 
             percent = Math.max(0, Math.min(1, (float) (percent + (Math.max(0, Math.min(percentBar, 1)) - percent) * (0.2 / clamp))));
             RenderUtils.drawRect(module.tab.getPosX() + 1, y + 3, module.tab.getPosX() + 99, y + 14, new Color(0, 0, 0, 50).getRGB());
-            RenderUtils.drawRect(module.tab.getPosX() + 1, y + 3, module.tab.getPosX() + 1 + 98 * percent, y + 14, ClickGUIModule.generateColor());
+            RenderUtils.drawRect(module.tab.getPosX() + 1, y + 3, module.tab.getPosX() + 1 + 98 * percent, y + 14, ClickGUIModule.INSTANCE.generateColor());
             Fonts.SF.SF_18.SF_18.drawString(integerValue.getName() + " " + rounded, module.tab.getPosX() + 4, y + 5.5f, 0xffffffff, true);
 
             if (this.dragging2) {
                 double difference = integerValue.getMaximum() - integerValue.getMinimum();
                 double value = integerValue.getMinimum() +
                         MathHelper.clamp_double((mouseX - (module.tab.getPosX() + 1)) / 99, 0, 1) * difference;
-                double set = MathUtils.incValue(value,1);
+                double set = MathUtils.INSTANCE.incValue(value,1);
 
                 integerValue.set(set);
                 //   EventManager.call(new SettingEvent(module.getModule(), setting.getName(), setting.getSliderNumber()));
@@ -118,7 +118,7 @@ public class Setting {
             final BoolValue boolValue = (BoolValue) setting;
             RenderUtils.drawRect(module.tab.getPosX() + 89, y + 4, module.tab.getPosX() + 99, y + 14, new Color(0, 0, 0, 50).getRGB());
             if (boolValue.get()) {
-                RenderUtils.drawCheck(module.tab.getPosX() + 91, y + 8.5f, 2, ClickGUIModule.generateColor().brighter().getRGB());
+                RenderUtils.drawCheck(module.tab.getPosX() + 91, y + 8.5f, 2, ClickGUIModule.INSTANCE.generateColor().brighter().getRGB());
             }
 
             Fonts.SF.SF_18.SF_18.drawString(boolValue.getName(), module.tab.getPosX() + 4, y + 5.5f,

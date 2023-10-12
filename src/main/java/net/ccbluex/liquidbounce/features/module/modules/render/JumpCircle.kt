@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.Render3DEvent
 import net.ccbluex.liquidbounce.event.UpdateEvent
@@ -24,7 +24,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @ModuleInfo(name = "JumpCircle", category = ModuleCategory.RENDER)
-class JumpCircle : Module() {
+object JumpCircle : Module() {
 
     val disappearTime = IntegerValue("Time", 1000, 1000,3000)
     val radius = FloatValue("Radius", 2f, 1f,5f)
@@ -74,7 +74,7 @@ class JumpCircle : Module() {
     }
 
     class Circle(val time: Long, val x: Double, val y: Double, val z: Double){
-        val jumpModule = LiquidBounce.moduleManager.getModule(JumpCircle::class.java) as JumpCircle
+        val jumpModule = FDPClient.moduleManager.getModule(JumpCircle::class.java) as JumpCircle
 
         fun draw() {
 

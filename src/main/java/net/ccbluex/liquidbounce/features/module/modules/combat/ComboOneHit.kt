@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.AttackEvent
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.features.module.Module
@@ -19,7 +19,7 @@ import net.minecraft.network.play.client.C0APacketAnimation
 
 @ModuleInfo(name = "ComboOneHit", category = ModuleCategory.COMBAT)
 @SuppressWarnings("ALL")
-class ComboOneHit : Module() {
+object ComboOneHit : Module() {
 
     private val amountValue = IntegerValue("Packets", 200, 0, 500)
     private val swingValue = ListValue("SwingMode", arrayOf("Normal","Packet"), "Normal")
@@ -38,7 +38,7 @@ class ComboOneHit : Module() {
                 "packet" -> mc.netHandler.addToSendQueue(C0APacketAnimation())
             }
         }
-        if (onlyAuraValue.get() && !LiquidBounce.moduleManager[KillAura::class.java]!!.state && !LiquidBounce.moduleManager[InfiniteAura::class.java]!!.state) return
+        if (onlyAuraValue.get() && !FDPClient.moduleManager[KillAura::class.java]!!.state && !FDPClient.moduleManager[InfiniteAura::class.java]!!.state) return
 
         repeat (amountValue.get()) {
             swingPacket()

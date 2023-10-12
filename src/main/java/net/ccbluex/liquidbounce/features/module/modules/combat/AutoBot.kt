@@ -1,6 +1,6 @@
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.UpdateEvent
 import net.ccbluex.liquidbounce.features.module.Module
@@ -25,7 +25,8 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 
 @ModuleInfo("AutoBot", category = ModuleCategory.COMBAT)
-class AutoBot : Module() {
+object AutoBot : Module() {
+
     private val autoSoupValue = BoolValue("AutoSoup", true)
     private val autoPotValue = BoolValue("AutoPot", true)
     private val autoBowValue = BoolValue("AutoBow", true)
@@ -190,7 +191,7 @@ class AutoBot : Module() {
                 "custom" -> autoPotThrowAngle = autoPotThrowAngleOption.get().toFloat()
             }
 
-            if (autoPotNotCombatValue.get() && LiquidBounce.combatManager.inCombat) return
+            if (autoPotNotCombatValue.get() && FDPClient.combatManager.inCombat) return
             if (autoPotOnGround.get() && !mc.thePlayer.onGround) return
             
             if (!autoPotOnGround.get()) {
@@ -289,7 +290,7 @@ class AutoBot : Module() {
         }
 
         if(autoBowValue.get()) {
-            val bowAimbot = LiquidBounce.moduleManager[BowAimbot::class.java]!!
+            val bowAimbot = FDPClient.moduleManager[BowAimbot::class.java]!!
 
             if (mc.thePlayer.isUsingItem && mc.thePlayer.heldItem?.item == Items.bow &&
                 mc.thePlayer.itemInUseDuration > 20 && (!autoBowWaitForBowAimValue.get() || !bowAimbot.state || bowAimbot.hasTarget())) {

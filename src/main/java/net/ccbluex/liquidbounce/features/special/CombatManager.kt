@@ -1,6 +1,6 @@
 package net.ccbluex.liquidbounce.features.special
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.utils.EntityUtils
 import net.ccbluex.liquidbounce.utils.MinecraftInstance
@@ -27,14 +27,14 @@ class CombatManager : Listenable, MinecraftInstance() {
         // bypass java.util.ConcurrentModificationException
         attackedEntityList.map { it }.forEach {
             if (it.isDead) {
-                LiquidBounce.eventManager.callEvent(EntityKilledEvent(it))
+                FDPClient.eventManager.callEvent(EntityKilledEvent(it))
                 attackedEntityList.remove(it)
             }
         }
 
         inCombat = false
 
-        if (!lastAttackTimer.hasTimePassed(1000)) {
+        if (!lastAttackTimer.hasTimePassed(250)) {
             inCombat = true
             return
         }

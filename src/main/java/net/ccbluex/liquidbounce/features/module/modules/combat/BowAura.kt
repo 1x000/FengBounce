@@ -27,7 +27,7 @@ import net.minecraft.util.EnumFacing
 import java.awt.Color
 
 @ModuleInfo(name = "BowAura", category = ModuleCategory.COMBAT)
-class BowAura : Module() {
+object BowAura : Module() {
 
     private val silentValue = BoolValue("Silent", true)
     private val predictValue = BoolValue("Predict", true)

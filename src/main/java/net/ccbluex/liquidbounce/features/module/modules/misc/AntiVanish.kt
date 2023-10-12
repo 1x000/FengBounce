@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.misc
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.features.module.Module
@@ -17,7 +17,8 @@ import net.minecraft.network.play.server.S14PacketEntity
 import net.minecraft.network.play.server.S1DPacketEntityEffect
 
 @ModuleInfo(name = "AntiVanish", category = ModuleCategory.MISC)
-class AntiVanish : Module() {
+object AntiVanish : Module() {
+
     private var lastNotify = -1L
 
     @EventTarget
@@ -36,7 +37,7 @@ class AntiVanish : Module() {
 
     private fun vanish() {
         if((System.currentTimeMillis()-lastNotify)>5000){
-            LiquidBounce.hud.addNotification(Notification("Found a vanished entity!", "someone just vanished!", NotifyType.WARNING, 4000, 500))
+            FDPClient.hud.addNotification(Notification("Found a vanished entity!", "someone just vanished!", NotifyType.WARNING, 4000, 500))
 
         }
         lastNotify=System.currentTimeMillis()

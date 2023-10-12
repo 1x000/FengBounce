@@ -14,7 +14,7 @@ import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.normal.TimerUtil;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.objects.Drag;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.render.DrRenderUtils;
 
-import net.ccbluex.liquidbounce.utils.math.MathUtils;
+import net.ccbluex.liquidbounce.utils.MathUtils;
 import net.ccbluex.liquidbounce.utils.render.RoundedUtil;
 import net.minecraft.client.gui.ScaledResolution;
 
@@ -22,9 +22,6 @@ import java.awt.*;
 import java.util.HashMap;
 
 public class SideGui extends GuiPanel {
-
-  //  private final ConfigPanel configPanel = new ConfigPanel();
-  //  private final ScriptPanel scriptPanel = new ScriptPanel();
   private final String[] categories = {"Scripts", "Configs"};
     public boolean focused;
     public Animation clickAnimation;
@@ -103,8 +100,8 @@ public class SideGui extends GuiPanel {
 
 
         if (!clickAnimation.isDone()) {
-            drag.setX(MathUtils.interpolateFloat(sr.getScaledWidth() - 30, focused ? sr.getScaledWidth() / 2f - rectWidth / 2f : drag.getX(), (float) clickAnimation.getOutput()));
-            drag.setY(MathUtils.interpolateFloat(sr.getScaledHeight() / 2f - rectHeight / 2f, drag.getY(), (float) clickAnimation.getOutput()));
+            drag.setX(MathUtils.INSTANCE.interpolateFloat(sr.getScaledWidth() - 30, focused ? sr.getScaledWidth() / 2f - rectWidth / 2f : drag.getX(), (float) clickAnimation.getOutput()));
+            drag.setY(MathUtils.INSTANCE.interpolateFloat(sr.getScaledHeight() / 2f - rectHeight / 2f, drag.getY(), (float) clickAnimation.getOutput()));
         }
 
         boolean gradient = drag.getX() + rectWidth > sr.getScaledWidth() && focused && (clickAnimation.isDone() && clickAnimation.getDirection().equals(Direction.FORWARDS));
@@ -136,7 +133,7 @@ public class SideGui extends GuiPanel {
             hoverAnimation.setDirection(hovered ? Direction.FORWARDS : Direction.BACKWARDS);
             enableAnimation.setDirection(currentCategory.equals(category) ? Direction.FORWARDS : Direction.BACKWARDS);
 
-            Color color22 = new Color(ClickGUIModule.generateColor().getRGB());
+            Color color22 = new Color(ClickGUIModule.INSTANCE.generateColor().getRGB());
             Color categoryColor = new Color(45, 45, 45, alpha);
             Color hoverColor = DrRenderUtils.interpolateColorC(categoryColor, DrRenderUtils.brighter(categoryColor, .8f), (float) hoverAnimation.getOutput());
             Color finalColor = DrRenderUtils.interpolateColorC(hoverColor, DrRenderUtils.applyOpacity(color22, alpha / 255f), (float) enableAnimation.getOutput());
@@ -169,8 +166,8 @@ public class SideGui extends GuiPanel {
 
         DrRenderUtils.setAlphaLimit(0);
         DrRenderUtils.drawGradientRectSideways2(sr.getScaledWidth() - 40, 0, 40, sr.getScaledHeight(),
-                DrRenderUtils.applyOpacity(ClickGUIModule.generateColor().getRGB(), 0),
-                DrRenderUtils.applyOpacity(ClickGUIModule.generateColor().getRGB(), (float) (.4 * moveOverGradientAnimation.getOutput())));
+                DrRenderUtils.applyOpacity(ClickGUIModule.INSTANCE.generateColor().getRGB(), 0),
+                DrRenderUtils.applyOpacity(ClickGUIModule.INSTANCE.generateColor().getRGB(), (float) (.4 * moveOverGradientAnimation.getOutput())));
 
         DrRenderUtils.setAlphaLimit(1);
     }

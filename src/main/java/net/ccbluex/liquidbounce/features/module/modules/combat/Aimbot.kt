@@ -16,13 +16,12 @@ import net.ccbluex.liquidbounce.utils.RotationUtils
 import net.ccbluex.liquidbounce.utils.extensions.getDistanceToEntityBox
 import net.ccbluex.liquidbounce.utils.misc.RandomUtils
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
-import net.ccbluex.liquidbounce.features.value.BoolValue
-import net.ccbluex.liquidbounce.features.value.FloatValue
-import net.ccbluex.liquidbounce.features.value.IntegerValue
+import net.ccbluex.liquidbounce.features.value.*
+import net.ccbluex.liquidbounce.utils.extensions.hitBox
 import kotlin.random.Random
 
 @ModuleInfo(name = "Aimbot", category = ModuleCategory.COMBAT)
-class Aimbot : Module() {
+object Aimbot : Module() {
 
     private val rangeValue = FloatValue("Range", 4.4F, 1F, 8F)
     private val turnSpeedValue = FloatValue("TurnSpeed", 2F, 1F, 180F)
@@ -30,7 +29,7 @@ class Aimbot : Module() {
     private val smoothValue = BoolValue("Smooth", false)
     private val smoothAngleValue = IntegerValue("SmoothMinAngle", 30, 1, 180).displayable { smoothValue.get() }
     private val fovValue = FloatValue("FOV", 180F, 1F, 180F)
-    private val centerValue = BoolValue("Center", false)
+    private val rotMode = ListValue("RotationMode", arrayOf("LiquidBounce", "Full", "HalfUp", "HalfDown", "CenterSimple", "CenterLine"), "HalfUp")
     private val lockValue = BoolValue("Lock", true)
     private val onClickValue = BoolValue("OnClick", false)
     private val onClickDurationValue = IntegerValue("OnClickDuration", 500, 100, 1000).displayable { onClickValue.get() }
@@ -64,15 +63,17 @@ class Aimbot : Module() {
         val calcBaseSpeed = turnSpeedValue.get() + Math.random() * randomTurnValue.get() - Math.random() * randomTurnValue.get()
         val angleDiff = RotationUtils.getRotationDifference(entity)
         val calcPrecent = if (angleDiff >= smoothAngleValue.get() || !smoothValue.get()) { 1.0 } else { angleDiff / smoothAngleValue.get() }
-
+        
         val rotation = RotationUtils.limitAngleChange(
             Rotation(mc.thePlayer.rotationYaw, mc.thePlayer.rotationPitch),
-            if (centerValue.get()) {
-                RotationUtils.toRotation(RotationUtils.getCenter(entity.entityBoundingBox), true)
-            } else {
-                RotationUtils.searchCenter(entity.entityBoundingBox, false, false, true,
-                    false).rotation
-            },
+            (RotationUtils.calculateCenter(
+                        rotMode.get(),
+                        "Horizontal",
+                        0.1,
+                        entity.hitBox,
+                        false,
+                        true)
+            ).rotation,
             (calcBaseSpeed * calcPrecent).toFloat()
         )
 

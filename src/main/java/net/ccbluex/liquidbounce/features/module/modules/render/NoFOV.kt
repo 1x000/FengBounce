@@ -11,6 +11,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.features.value.FloatValue
 
 @ModuleInfo(name = "NoFOV", category = ModuleCategory.RENDER)
-class NoFOV : Module() {
+object NoFOV : Module() {
+
     val fovValue = FloatValue("FOV", 1f, 0f, 1.5f)
 }

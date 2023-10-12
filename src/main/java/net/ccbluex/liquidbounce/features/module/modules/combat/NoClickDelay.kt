@@ -12,7 +12,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 
 @ModuleInfo(name = "NoClickDelay", category = ModuleCategory.COMBAT)
-class NoClickDelay : Module() {
+object NoClickDelay : Module() {
 
     @EventTarget
     fun onMotion(event: MotionEvent) {

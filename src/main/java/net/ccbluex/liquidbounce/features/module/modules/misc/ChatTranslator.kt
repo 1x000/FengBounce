@@ -19,7 +19,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 
 @ModuleInfo(name = "ChatTranslator", category = ModuleCategory.MISC)
-class ChatTranslator : Module() {
+object ChatTranslator : Module() {
 
     private val languageValue = ListValue("Language", arrayOf("Chinese", "English"), "Chinese")
     private val apiValue = ListValue("API", arrayOf("Google", "Bing", "YouDao"), "Bing")

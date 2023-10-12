@@ -25,8 +25,9 @@ import net.minecraft.network.play.client.C03PacketPlayer.*
 
 @ModuleInfo(name = "SuperKnockback", category = ModuleCategory.COMBAT)
 class SuperKnockback : Module() {
+
     private val hurtTimeValue = IntegerValue("HurtTime", 10, 0, 10)
-    private val modeValue = ListValue("Mode", arrayOf("Legit", "Silent", "SprintReset", "SneakPacket"), "Silent")
+    private val modeValue = ListValue("Mode", arrayOf("Wtap", "Legit", "Silent", "SprintReset", "SneakPacket"), "Silent")
     private val onlyMoveValue = BoolValue("OnlyMove", true)
     private val onlyMoveForwardValue = BoolValue("OnlyMoveForward", true). displayable { onlyMoveValue.get() }
     private val onlyGroundValue = BoolValue("OnlyGround", false)
@@ -50,6 +51,9 @@ class SuperKnockback : Module() {
                 
             when (modeValue.get().lowercase()) {
                 
+                "wtap" ->  ticks = 2
+                
+                
                 "legit" -> {
                     ticks = 2
                 }
@@ -58,11 +62,7 @@ class SuperKnockback : Module() {
                     ticks = 1
                 }
 
-                "SprintReset" -> {
-                    if (mc.thePlayer.isSprinting) {
-                        mc.thePlayer.isSprinting = false
-                    }
-                    mc.netHandler.addToSendQueue(C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING))
+                "sprintreset" -> {
                     mc.netHandler.addToSendQueue(C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING))
                 }
                 
@@ -85,6 +85,15 @@ class SuperKnockback : Module() {
     fun onUpdate(event: UpdateEvent) {
         if (modeValue.equals("Legit")) {
             if (ticks == 2) {
+                mc.gameSettings.keyBindForward.pressed = false
+                ticks = 1
+            } else if (ticks == 1) {
+                mc.gameSettings.keyBindForward.pressed = true
+                ticks = 0
+            }
+        }
+        if (modeValue.equals("Wtap")) {
+            if (ticks == 2) {
                 mc.thePlayer.isSprinting = false
                 ticks = 1
             } else if (ticks == 1) {
@@ -92,12 +101,7 @@ class SuperKnockback : Module() {
                 ticks = 0
             }
         }
-    }
-    
-    @EventTarget
-    fun onPacket(event: PacketEvent) {
-        val packet = event.packet
-        if ((packet is C04PacketPlayerPosition || packet is C06PacketPlayerPosLook) && modeValue.equals("Silent")) {
+        if (modeValue.equals("Silent")) {
             if (ticks == 1) {
                 mc.netHandler.addToSendQueue(C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING))
                 ticks = 2
@@ -107,7 +111,7 @@ class SuperKnockback : Module() {
             }
         }
     }
-                
+   
     override val tag: String
         get() = modeValue.get()
 }

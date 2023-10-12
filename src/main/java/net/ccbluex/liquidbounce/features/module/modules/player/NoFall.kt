@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.player
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.EnumAutoDisableType
 import net.ccbluex.liquidbounce.features.module.Module
@@ -21,7 +21,8 @@ import net.minecraft.block.BlockLiquid
 import net.minecraft.util.AxisAlignedBB
 
 @ModuleInfo(name = "NoFall", category = ModuleCategory.PLAYER, autoDisable = EnumAutoDisableType.FLAG)
-class NoFall : Module() {
+object NoFall : Module() {
+
     private val modes = ClassUtils.resolvePackage("${this.javaClass.`package`.name}.nofalls", NoFallMode::class.java)
         .map { it.newInstance() as NoFallMode }
         .sortedBy { it.modeName }
@@ -82,7 +83,7 @@ class NoFall : Module() {
             wasTimer = false
         }
         mode.onUpdate(event)
-        if (!state || LiquidBounce.moduleManager[FreeCam::class.java]!!.state) {
+        if (!state || FDPClient.moduleManager[FreeCam::class.java]!!.state) {
             return
         }
 

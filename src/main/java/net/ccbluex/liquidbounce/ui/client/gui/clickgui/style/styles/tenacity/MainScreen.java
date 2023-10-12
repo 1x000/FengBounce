@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.tenacity;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 
 import net.ccbluex.liquidbounce.features.module.Module;
 import net.ccbluex.liquidbounce.features.module.ModuleCategory;
@@ -19,7 +19,8 @@ import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.normal.Main;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.normal.Screen;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.render.DrRenderUtils;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.render.StencilUtil;
-import net.ccbluex.liquidbounce.utils.math.MathUtils;
+import net.ccbluex.liquidbounce.ui.client.gui.clickgui.utils.render.Scroll;
+import net.ccbluex.liquidbounce.utils.MathUtils;
 import net.minecraft.client.gui.ScaledResolution;
 
 import java.awt.*;
@@ -49,7 +50,7 @@ public class MainScreen implements Screen {
     public void initGui() {
         if (moduleRects == null) {
             moduleRects = new ArrayList<>();
-            for (Module module : Main.getModulesInCategory(category,LiquidBounce.moduleManager).stream().sorted(Comparator.comparing(Module::getName)).collect(Collectors.toList())) {
+            for (Module module : Main.getModulesInCategory(category, FDPClient.moduleManager).stream().sorted(Comparator.comparing(Module::getName)).collect(Collectors.toList())) {
                 ModuleRect moduleRect = new ModuleRect(module);
                 moduleRects.add(moduleRect);
                 moduleAnimMap.put(moduleRect, new DecelerateAnimation(250, 1));
@@ -109,8 +110,8 @@ public class MainScreen implements Screen {
 
         //     ClickGuiMod clickGUIMod = (ClickGuiMod) Tenacity.INSTANCE.getModuleCollection().get(ClickGuiMod.class);
 
-        if (ClickGUIModule.scrollMode.get().equals("Value")) {
-            Main.allowedClickGuiHeight =  ClickGUIModule.clickHeight.get().floatValue();
+        if (ClickGUIModule.INSTANCE.getScrollMode().equals("Value")) {
+            Main.allowedClickGuiHeight =  ClickGUIModule.INSTANCE.getClickHeight().get().floatValue();
         } else {
             ScaledResolution sr = new ScaledResolution(mc);
             Main.allowedClickGuiHeight = 2 * sr.getScaledHeight() / 3f;
@@ -141,7 +142,7 @@ public class MainScreen implements Screen {
             moduleRect.height = 17;
             moduleRect.panelLimitY = y;
             moduleRect.openingAnimation = openingAnimation;
-            moduleRect.y = (float) (y + categoryRectHeight + (count * 17) + MathUtils.roundToHalf(scroll));
+            moduleRect.y = (float) (y + categoryRectHeight + (count * 17) + MathUtils.INSTANCE.roundToHalf(scroll));
             moduleRect.width = rectWidth;
             moduleRect.drawScreen(mouseX, mouseY);
 
@@ -151,7 +152,7 @@ public class MainScreen implements Screen {
         if (hoveringMods) {
             category.getScroll().onScroll(30);
             float hiddenHeight = (float) ((count * 17) - allowedHeight);
-            //category.getScroll().setMinScroll(Math.max(0, hiddenHeight));
+            category.getScroll().setMinScroll(Math.max(0, hiddenHeight));
         }
 
         StencilUtil.uninitStencilBuffer();

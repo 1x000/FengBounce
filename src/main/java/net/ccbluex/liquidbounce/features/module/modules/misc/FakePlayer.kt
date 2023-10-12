@@ -11,7 +11,8 @@ import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.minecraft.client.entity.EntityOtherPlayerMP
 
 @ModuleInfo(name = "FakePlayer", category = ModuleCategory.MISC)
-class FakePlayer : Module() {
+object FakePlayer : Module() {
+
     private var fakePlayer: EntityOtherPlayerMP? = null
 
     override fun onEnable() {

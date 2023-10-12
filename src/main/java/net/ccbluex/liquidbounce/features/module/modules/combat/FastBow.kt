@@ -21,7 +21,7 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 
 @ModuleInfo(name = "FastBow", category = ModuleCategory.COMBAT)
-class FastBow : Module() {
+object FastBow : Module() {
 
     private val packetsValue = IntegerValue("Packets", 20, 3, 20)
     private val delay = IntegerValue("Delay", 0, 0, 500)

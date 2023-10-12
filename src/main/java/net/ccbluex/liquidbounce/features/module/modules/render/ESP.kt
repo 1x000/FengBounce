@@ -35,7 +35,7 @@ import java.awt.Color
 import java.text.DecimalFormat
 
 @ModuleInfo(name = "ESP", category = ModuleCategory.RENDER)
-class ESP : Module() {
+object ESP : Module() {
     val modeValue = ListValue(
         "Mode",
         arrayOf("Box", "OtherBox", "WireFrame", "2D", "Real2D", "CSGO", "CSGO-Old", "Outline", "ShaderOutline", "ShaderGlow", "Jello"),

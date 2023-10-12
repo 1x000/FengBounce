@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.movement
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.event.UpdateEvent
@@ -21,7 +21,8 @@ import net.minecraft.network.play.client.C03PacketPlayer
 import net.minecraft.network.play.server.S08PacketPlayerPosLook
 
 @ModuleInfo(name = "AntiStuck", category = ModuleCategory.MOVEMENT)
-class AntiStuck : Module() {
+object AntiStuck : Module() {
+
     private val flagsValue = IntegerValue("Flags", 5, 1, 10)
 
     private val timer = MSTimer()
@@ -48,7 +49,7 @@ class AntiStuck : Module() {
     @EventTarget
     fun onUpdate(event: UpdateEvent) {
         if (stuck) {
-            val freeze = LiquidBounce.moduleManager[Freeze::class.java]!!
+            val freeze = FDPClient.moduleManager[Freeze::class.java]!!
             freeze.state = true
 
             if (timer.hasTimePassed(1500)) {
@@ -64,7 +65,7 @@ class AntiStuck : Module() {
                 reduceTimer.reset()
                 flagsTime = 0
                 stuck = true
-                LiquidBounce.hud.addNotification(Notification(name, "Trying to unstuck you", NotifyType.INFO, 1500))
+                FDPClient.hud.addNotification(Notification(name, "Trying to unstuck you", NotifyType.INFO, 1500))
             }
             if (timer.hasTimePassed(1500) && reduceTimer.hasTimePassed(500) && flagsTime> 0) {
                 flagsTime -= 1

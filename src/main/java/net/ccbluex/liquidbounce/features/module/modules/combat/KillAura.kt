@@ -5,13 +5,13 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.features.module.modules.client.HUD
-import net.ccbluex.liquidbounce.features.module.modules.movement.Fly
+import net.ccbluex.liquidbounce.features.module.modules.movement.Flight
 import net.ccbluex.liquidbounce.features.module.modules.movement.StrafeFix
 import net.ccbluex.liquidbounce.features.module.modules.movement.TargetStrafe
 import net.ccbluex.liquidbounce.features.module.modules.player.Blink
@@ -20,19 +20,22 @@ import net.ccbluex.liquidbounce.features.module.modules.world.Scaffold
 import net.ccbluex.liquidbounce.features.value.*
 import net.ccbluex.liquidbounce.utils.*
 import net.ccbluex.liquidbounce.utils.extensions.getDistanceToEntityBox
+import net.ccbluex.liquidbounce.utils.extensions.hitBox
 import net.ccbluex.liquidbounce.utils.extensions.rayTraceWithServerSideRotation
 import net.ccbluex.liquidbounce.utils.misc.RandomUtils
 import net.ccbluex.liquidbounce.utils.render.EaseUtils
 import net.ccbluex.liquidbounce.utils.render.RenderUtils
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.ccbluex.liquidbounce.utils.timer.TimeUtils
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
+import net.minecraft.item.ItemBlock
+import net.minecraft.item.ItemBucketMilk
+import net.minecraft.item.ItemFood
 import net.minecraft.item.ItemSword
 import net.minecraft.network.play.client.*
 import net.minecraft.potion.Potion
@@ -45,8 +48,8 @@ import java.awt.Color
 import java.util.*
 import kotlin.math.*
 
-@ModuleInfo(name = "KillAura", category = ModuleCategory.COMBAT, keyBind = Keyboard.KEY_R)
-class KillAura : Module() {
+@ModuleInfo(name = "KillAura", category = ModuleCategory.COMBAT, keyBind = Keyboard.KEY_G)
+object KillAura : Module() {
     /**
      * OPTIONS
      */
@@ -70,14 +73,16 @@ class KillAura : Module() {
             attackDelay = getAttackDelay(this.get(), maxCpsValue.get())
         }
     }.displayable {!simulateCooldown.get() && attackDisplay.get()} as IntegerValue
-    
+
+    private val CpsReduceValue = BoolValue("CPSReduceVelocity", false)
+
     private val simulateCooldown = BoolValue("SimulateCooldown", false).displayable { attackDisplay.get() }
     private val cooldownNoDupAtk = BoolValue("NoDuplicateAttack", false).displayable { simulateCooldown.get() && attackDisplay.get() }
 
     private val hurtTimeValue = IntegerValue("HurtTime", 10, 0, 10).displayable { attackDisplay.get() }
     private val clickOnly = BoolValue("ClickOnly", false).displayable { attackDisplay.get() }
 
-    // Range  
+    // Range
     val rangeValue = object : FloatValue("Range", 3.7f, 0f, 8f) {
         override fun onChanged(oldValue: Float, newValue: Float) {
             val i = discoverRangeValue.get()
@@ -91,7 +96,7 @@ class KillAura : Module() {
         }
     }.displayable { attackDisplay.get() } as FloatValue
     private val rangeSprintReducementValue = FloatValue("RangeSprintReducement", 0f, 0f, 0.4f).displayable { attackDisplay.get() }
-    
+
     private val swingRangeValue = object : FloatValue("SwingRange", 5f, 0f, 8f) {
         override fun onChanged(oldValue: Float, newValue: Float) {
             val i = discoverRangeValue.get()
@@ -100,13 +105,15 @@ class KillAura : Module() {
         }
     }.displayable { attackDisplay.get() } as FloatValue
     private val discoverRangeValue = FloatValue("DiscoverRange", 6f, 0f, 8f).displayable { attackDisplay.get() }
-   
+
     private val hitselectValue = BoolValue("Hitselect", false).displayable { attackDisplay.get() }
     private val hitselectRangeValue = FloatValue("HitselectRange", 2.7f, 2f, 4f).displayable { attackDisplay.get() }
 
     private val blinkCheck = BoolValue("BlinkCheck", true).displayable { attackDisplay.get() }
     private val noScaffValue = BoolValue("NoScaffold", true).displayable { attackDisplay.get() }
     private val noFlyValue = BoolValue("NoFly", false).displayable { attackDisplay.get() }
+    private val noEat = BoolValue("NoEat", true).displayable { attackDisplay.get() }
+    private val noBlocking = BoolValue("NoBlocking", false).displayable { attackDisplay.get() }
 
     // Bypass
     private val swingValue = ListValue("Swing", arrayOf("Normal", "Packet", "None"), "Normal").displayable { attackDisplay.get() }
@@ -123,31 +130,49 @@ class KillAura : Module() {
             if (i < newValue) set(i)
         }
     }.displayable { !autoBlockValue.equals("Off") && autoBlockValue.displayable }
-    private val autoBlockPacketValue = ListValue("AutoBlockPacket", arrayOf("AfterTick", "AfterAttack", "Vanilla", "Delayed", "Legit", "OldIntave", "OldHypixel"), "Vanilla").displayable { autoBlockValue.equals("Range") && autoBlockValue.displayable }
+    private val autoBlockPacketValue = ListValue("AutoBlockPacket", arrayOf("AfterTick", "AfterAttack", "Vanilla", "Delayed", "Delayed2", "Legit", "OldIntave", "Test", "HoldKey", "KeyBlock","Gay"), "Vanilla").displayable { autoBlockValue.equals("Range") && autoBlockValue.displayable }
     private val interactAutoBlockValue = BoolValue("InteractAutoBlock", false).displayable { autoBlockPacketValue.displayable }
+    private val smartAutoBlockValue = BoolValue("SmartAutoBlock", false).displayable { autoBlockPacketValue.displayable }
     private val blockRateValue = IntegerValue("BlockRate", 100, 1, 100).displayable { autoBlockPacketValue.displayable }
     private val alwaysBlockDisplayValue = BoolValue("AlwaysRenderBlocking", true).displayable { autoBlockValue.displayable && autoBlockValue.equals("Range") }
-    
+
     // Raycast
     private val raycastValue = BoolValue("RayCast", true).displayable { attackDisplay.get() }
     private val raycastTargetValue = BoolValue("RaycastOnlyTarget", false).displayable { raycastValue.get() && raycastValue.displayable }
-    
+
     private val rotationDisplay = BoolValue("Rotation Options:", true)
     // Modes
-    private val priorityValue = ListValue("Priority", arrayOf("Health", "Distance", "Fov", "LivingTime", "Armor", "HurtTime", "RegenAmplifier"), "Fov").displayable { rotationDisplay.get() }
-    private val targetModeValue = ListValue("TargetMode", arrayOf("Single", "Switch", "Multi"), "Switch").displayable { rotationDisplay.get() }
+    private val priorityValue = ListValue(
+        "Priority", arrayOf(
+            "Health",
+            "Distance",
+            "Direction",
+            "LivingTime",
+            "Armor",
+            "HurtResistance",
+            "HurtTime",
+            "HealthAbsorption",
+            "RegenAmplifier"
+        ), "Distance"
+    )
+    val targetModeValue = ListValue("TargetMode", arrayOf("Single", "Switch", "Multi"), "Switch").displayable { rotationDisplay.get() }
     private val switchDelayValue = IntegerValue("SwitchDelay", 15, 1, 2000).displayable { targetModeValue.equals("Switch") && rotationDisplay.get() }
     private val limitedMultiTargetsValue = IntegerValue("LimitedMultiTargets", 0, 0, 50).displayable { targetModeValue.equals("Multi") && rotationDisplay.get()}
 
     // Rotations
     private val rotationModeValue = ListValue(
         "RotationMode",
-        arrayOf("None", "LiquidBounce", "ForceCenter", "SmoothCenter", "SmoothLiquid", "LockView", "OldMatrix", "Test"),
+        arrayOf("None", "LiquidBounce", "ForceCenter", "SmoothCenter", "SmoothLiquid", "LockView", "OldMatrix", "Test", "SmoothCustom"),
         "LiquidBounce"
     ).displayable { rotationDisplay.get()}
-    
+
+    private val customRotationValue = ListValue(
+        "CustomRotationMode",
+        arrayOf ("LiquidBounce", "Full", "HalfUp", "HalfDown", "CenterSimple", "CenterLine"),
+        "HalfUp") .displayable { rotationDisplay.get() && rotationModeValue.equals("SmoothCustom") }
+
     private val silentRotationValue = BoolValue("SilentRotation", true).displayable { !rotationModeValue.equals("None") && rotationDisplay.get()}
-    
+
     // Others
     private val hitAbleValue = BoolValue("AlwaysHitAble", true).displayable { rotationDisplay.get() }
     private val fovValue = FloatValue("FOV", 180f, 0f, 180f).displayable { rotationDisplay.get() }
@@ -167,12 +192,12 @@ class KillAura : Module() {
     }.displayable { rotationDisplay.get() && !rotationModeValue.equals("LockView")} as FloatValue
 
     private val rotationSmoothModeValue = ListValue("SmoothMode", arrayOf("Custom", "Line", "Quad", "Sine", "QuadSine"), "Custom").displayable { rotationDisplay.get() && !rotationModeValue.equals("LiquidBounce") && !rotationModeValue.equals("ForceCenter") && !rotationModeValue.equals("LockView")}
-    private val rotationSmoothValue = FloatValue("CustomSmooth", 2f, 1f, 10f).displayable { rotationSmoothModeValue.equals("Custom") && rotationDisplay.get()}
-    
+    private val rotationSmoothValue = FloatValue("CustomSmooth", 2f, 1f, 10f).displayable { rotationSmoothModeValue.equals("Custom") && rotationSmoothModeValue.displayable }
+
     // Random Value
-    private val randomCenterModeValue = ListValue("RandomCenter", arrayOf("Off", "Cubic", "Horizonal", "Vertical"), "Off").displayable { rotationDisplay.get() }
+    private val randomCenterModeValue = ListValue("RandomCenter", arrayOf("Off", "Cubic", "Horizontal", "Vertical"), "Off").displayable { rotationDisplay.get() }
     private val randomCenRangeValue = FloatValue("RandomRange", 0.0f, 0.0f, 1.2f).displayable { !randomCenterModeValue.equals("Off") && rotationDisplay.get()}
-    
+
     // Keep Rotate
     private val rotationRevValue = BoolValue("RotationReverse", false).displayable { !rotationModeValue.equals("None") && rotationDisplay.get()}
     private val rotationRevTickValue = IntegerValue("RotationReverseTick", 5, 1, 20).displayable {  rotationRevValue.get() && rotationRevValue.displayable }
@@ -180,10 +205,10 @@ class KillAura : Module() {
     private val keepDirectionTickValue = IntegerValue("KeepDirectionTick", 15, 1, 20).displayable { keepDirectionValue.get() && keepDirectionValue.displayable }
     private val rotationDelayValue = BoolValue("RotationDelay", false).displayable { !rotationModeValue.equals("None") && rotationDisplay.get() }
     private val rotationDelayMSValue = IntegerValue("RotationDelayMS", 300, 0, 1000).displayable { rotationDelayValue.get() && rotationDelayValue.displayable }
-      
+
     // Backtrace
     //private val backtraceValue = BoolValue("Backtrace", false)
-   
+
 
     // Predict
     private val predictValue = BoolValue("Predict", true).displayable { !rotationModeValue.equals("None") && rotationDisplay.get()}
@@ -201,44 +226,50 @@ class KillAura : Module() {
             if (v < newValue) set(v)
         }
     }.displayable { predictValue.displayable && predictValue.get() } as FloatValue
-    
-    
+
+
     private val predictPlayerValue = BoolValue("PredictPlayer", true).displayable { !rotationModeValue.equals("None") && rotationDisplay.get()}
-    
-    private val maxPredictPlayerSizeValue: FloatValue = object : FloatValue("MaxPredictPlayerSize", 1f, -1f, 3f) {
+
+    private val maxPredictPlayerSizeValue: FloatValue = object : FloatValue("MaxPredictPlayerSize", 1f, -1f, 4f) {
         override fun onChanged(oldValue: Float, newValue: Float) {
             val v = minPredictPlayerSizeValue.get()
             if (v > newValue) set(v)
         }
     }.displayable { predictPlayerValue.displayable && predictPlayerValue.get() } as FloatValue
 
-    private val minPredictPlayerSizeValue: FloatValue = object : FloatValue("MinPredictPlayerSize", 1f, -1f, 3f) {
+    private val minPredictPlayerSizeValue: FloatValue = object : FloatValue("MinPredictPlayerSize", 1f, -1f, 4f) {
         override fun onChanged(oldValue: Float, newValue: Float) {
             val v = maxPredictPlayerSizeValue.get()
             if (v < newValue) set(v)
         }
     }.displayable { predictPlayerValue.displayable && predictPlayerValue.get() } as FloatValue
-    
+
     private val bypassDisplay = BoolValue("Bypass Options:", true)
     // Bypass
     private val rotationStrafeValue = ListValue("Strafe", arrayOf("Off", "Strict", "Silent"), "Silent").displayable { silentRotationValue.get() && !rotationModeValue.equals("None") && bypassDisplay.get() }
 
     private val failRateValue = FloatValue("FailRate", 0f, 0f, 100f).displayable { bypassDisplay.get() }
     private val fakeSwingValue = BoolValue("FakeSwing", true).displayable { failRateValue.get() != 0f && failRateValue.displayable }
-    
+
     private val noInventoryAttackValue = ListValue("NoInvAttack", arrayOf("Spoof", "CancelRun", "Off"), "Off").displayable { bypassDisplay.get() }
     private val noInventoryDelayValue = IntegerValue("NoInvDelay", 200, 0, 500).displayable { !noInventoryAttackValue.equals("Off") && noInventoryAttackValue.displayable }
-    
+
     // Visuals
     private val visualDisplay = BoolValue("Visual Options: ", false)
-    
+
     private val markValue = ListValue("Mark", arrayOf("Liquid", "FDP", "Block", "OtherBlock", "Jello", "Sims", "Lies", "None"), "Jello").displayable { visualDisplay.get() }
+    private val blockMarkExpandValue = FloatValue("BlockExpandValue", 0.2f, -0.5f, 1f).displayable { markValue.displayable && (markValue.equals("Block") || markValue.equals("OtherBlock")) }
+
     private val circleValue = BoolValue("Circle", true).displayable { visualDisplay.get() }
     private val circleRedValue = IntegerValue("CircleRed", 255, 0, 255).displayable { circleValue.get() && circleValue.displayable }
     private val circleGreenValue = IntegerValue("CircleGreen", 255, 0, 255).displayable { circleValue.get() && circleValue.displayable }
     private val circleBlueValue = IntegerValue("CircleBlue", 255, 0, 255).displayable { circleValue.get() && circleValue.displayable }
     private val circleAlphaValue = IntegerValue("CircleAlpha", 255, 0, 255).displayable { circleValue.get() && circleValue.displayable }
     private val circleThicknessValue = FloatValue("CircleThickness", 2F, 1F, 5F).displayable { circleValue.get() && circleValue.displayable }
+
+    private val displayMode = ListValue("DisplayMode", arrayOf("Simple", "LessSimple", "Complicated"), "Simple").displayable {visualDisplay.get()}
+
+
 
     /**
      * MODULE
@@ -280,17 +311,18 @@ class KillAura : Module() {
 
     private var predictAmount = 1.0f
     private var predictPlayerAmount = 1.0f
-    
+
     // hit select
     private var canHitselect = false
     private val hitselectTimer = MSTimer()
-    
+
+    private val delayBlockTimer = MSTimer()
     private var delayBlock = false
     private var legitBlocking = 0
-    
+
 
     private val getAABB: ((Entity) -> AxisAlignedBB) = {
-        var aabb = it.entityBoundingBox
+        var aabb = it.hitBox
         aabb = if (predictValue.get()) aabb.offset(
             (it.posX - it.lastTickPosX) * predictAmount,
             (it.posY - it.lastTickPosY) * predictAmount,
@@ -326,7 +358,7 @@ class KillAura : Module() {
      * Disable kill aura module
      */
     override fun onDisable() {
-        LiquidBounce.moduleManager[TargetStrafe::class.java]!!.doStrafe = false
+        FDPClient.moduleManager[TargetStrafe::class.java]!!.doStrafe = false
         currentTarget = null
         hitable = false
         packetSent = false
@@ -338,6 +370,10 @@ class KillAura : Module() {
         canSwing = false
 
         stopBlocking()
+        if (autoBlockPacketValue.equals("HoldKey") || autoBlockPacketValue.equals("KeyBlock")) {
+            mc.gameSettings.keyBindUseItem.pressed = false
+        }
+        
         RotationUtils.setTargetRotationReverse(
             RotationUtils.serverRotation,
             if (keepDirectionValue.get()) { keepDirectionTickValue.get() + 1 } else { 1 },
@@ -353,32 +389,28 @@ class KillAura : Module() {
         if (event.eventState == EventState.POST) {
             packetSent = false
         }
-        
+
         updateHitable()
         val target = this.currentTarget ?: discoveredTargets.getOrNull(0) ?: return
         
-        if (autoBlockValue.equals("Range") && event.eventState == EventState.POST && autoBlockPacketValue.equals("OldHypixel")) {
-             if (mc.thePlayer.swingProgressInt == 1) {
-                stopBlocking()
-            } else if (mc.thePlayer.swingProgressInt == 2) {
-                startBlocking(target, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(target) < maxRange))
+        if (autoBlockValue.equals("Range") && autoBlockPacketValue.equals("HoldKey") && canBlock) {
+            if (inRangeDiscoveredTargets.isEmpty()) {
+                mc.gameSettings.keyBindUseItem.pressed = false
+            } else if (mc.thePlayer.getDistanceToEntityBox(target) < maxRange) {
+                mc.gameSettings.keyBindUseItem.pressed = true
             }
         }
-        
-        if (autoBlockValue.equals("Delayed") && delayBlock) {
-              startBlocking(target, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(target) < maxRange))
-              delayBlock = false
-        }
-            
-        
+
+
         if ((attackTimingValue.equals("Pre") && event.eventState != EventState.PRE) || (attackTimingValue.equals("Post") && !(event.eventState == EventState.POST)) || attackTimingValue.equals("All"))
             return
-        
+
         runAttackLoop()
-        
+
         if (packetSent && noBadPacketsValue.get()) {
             return
         }
+        return
         // AutoBlock
         if (autoBlockValue.equals("Range") && discoveredTargets.isNotEmpty() && (!autoBlockPacketValue.equals("AfterAttack")
                     || discoveredTargets.any { mc.thePlayer.getDistanceToEntityBox(it) > maxRange }) && canBlock
@@ -402,7 +434,7 @@ class KillAura : Module() {
     @EventTarget
     fun onUpdate(ignoredEvent: UpdateEvent) {
         if (clickOnly.get() && !mc.gameSettings.keyBindAttack.isKeyDown) return
-        
+
         if (cancelRun) {
             currentTarget = null
             hitable = false
@@ -427,27 +459,54 @@ class KillAura : Module() {
             stopBlocking()
             return
         }
-
-        LiquidBounce.moduleManager[TargetStrafe::class.java]!!.targetEntity = currentTarget?:return
         
-        LiquidBounce.moduleManager[StrafeFix::class.java]!!.applyForceStrafe(rotationStrafeValue.equals("Silent"), !rotationStrafeValue.equals("Off") && !rotationModeValue.equals("None"))
+
+        FDPClient.moduleManager[TargetStrafe::class.java]!!.targetEntity = currentTarget?:return
+
+        FDPClient.moduleManager[StrafeFix::class.java]!!.applyForceStrafe(rotationStrafeValue.equals("Silent"), !rotationStrafeValue.equals("Off") && !rotationModeValue.equals("None"))
+
+        val target = this.currentTarget ?: discoveredTargets.getOrNull(0) ?: return
+        
+        if (autoBlockValue.equals("Range") && ( autoBlockPacketValue.equals("Delayed2") || autoBlockPacketValue.equals("Test"))) {
+             if (mc.thePlayer.swingProgressInt == 1) {
+                 startBlocking(target, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(target) < maxRange))
+            }
+        }
+
+        if (autoBlockPacketValue.equals("Gay") && autoBlockValue.equals("Range")) {
+            if (mc.thePlayer.ticksExisted % 3 == 1) {
+                startBlocking(target, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(target) < maxRange))
+            } else if (mc.thePlayer.ticksExisted % 3 == 2) {
+                stopBlocking()
+            }
+        }
 
         if (attackTimingValue.equals("All")) {
             runAttackLoop()
         }
-        
+
         if (legitBlocking < 1 && autoBlockPacketValue.equals("Legit")) {
             if (blockingStatus) stopBlocking()
             blockingStatus = false
         }
     }
 
- 
 
-    private fun runAttackLoop() { 
-    
+
+    private fun runAttackLoop() {
+
+        if (autoBlockPacketValue.equals("Gay") && autoBlockValue.equals("Range")) {
+            if (mc.thePlayer.ticksExisted % 3 > 0) {
+                return
+            }
+        }
+
+        if (CpsReduceValue.get() && mc.thePlayer.hurtTime > 8){
+            clicks += 4
+        }
+
         // legit auto block, block if about to get damage, else, dont block
-        if (autoBlockPacketValue.equals("Legit")) {
+        if (autoBlockPacketValue.equals("Legit") && autoBlockValue.equals("Range")) {
             if (mc.thePlayer.hurtTime > 8) {
                 legitBlocking = 0
                 if (blockingStatus) stopBlocking()
@@ -464,10 +523,12 @@ class KillAura : Module() {
                         startBlocking(target, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(target) < maxRange))
                         blockingStatus = true
                     }
+                    if (clicks > 0)
+                        clicks = 1
                     return
                 } else {
                     if (!canHitselect && hitselectValue.get()) {
-                        legitBlocking = 3 
+                        legitBlocking = 3
                     } else {
                         if (blockingStatus) stopBlocking()
                         blockingStatus = false
@@ -475,8 +536,8 @@ class KillAura : Module() {
                 }
             }
         }
-        
-        
+
+
         // hit select (take damage to get yvelo to crit, for legit killaura)
         if (hitselectValue.get()) {
             if (canHitselect) {
@@ -488,14 +549,26 @@ class KillAura : Module() {
                 }
                 inRangeDiscoveredTargets.forEachIndexed { index, entity -> if ( mc.thePlayer.getDistanceToEntityBox(entity) < hitselectRangeValue.get() ) canHitselect = true; hitselectTimer.reset() }
             }
-            if (!canHitselect) return
+            if (!canHitselect) {
+                if (clicks > 0)
+                    clicks = 1
+                return
+            }
         }
-        
-        
+
+        if (autoBlockValue.equals("Range") && autoBlockPacketValue.equals("Test") && blockingStatus) {
+            stopBlocking()
+            if (clicks > 0) {
+                clicks = 1
+            }
+            return
+        }
+
+
         if (simulateCooldown.get() && CooldownHelper.getAttackCooldownProgress() < 1.0f) {
             return
         }
-        
+
         if (simulateCooldown.get() && cooldownNoDupAtk.get() && clicks > 0) {
             clicks = 1
         }
@@ -642,14 +715,14 @@ class KillAura : Module() {
             // Set target to current entity
             if (mc.thePlayer.getDistanceToEntityBox(entity) < discoverRangeValue.get()) {
                 currentTarget = entity
-                LiquidBounce.moduleManager[TargetStrafe::class.java]!!.targetEntity = currentTarget?:return
-                LiquidBounce.moduleManager[TargetStrafe::class.java]!!.doStrafe = LiquidBounce.moduleManager[TargetStrafe::class.java]!!.toggleStrafe()
+                FDPClient.moduleManager[TargetStrafe::class.java]!!.targetEntity = currentTarget?:return
+                FDPClient.moduleManager[TargetStrafe::class.java]!!.doStrafe = FDPClient.moduleManager[TargetStrafe::class.java]!!.toggleStrafe()
                 return
             }
         }
 
         currentTarget = null
-        LiquidBounce.moduleManager[TargetStrafe::class.java]!!.doStrafe = false
+        FDPClient.moduleManager[TargetStrafe::class.java]!!.doStrafe = false
     }
 
     private fun runSwing() {
@@ -670,7 +743,7 @@ class KillAura : Module() {
 
         // Call attack event
         val event = AttackEvent(entity)
-        LiquidBounce.eventManager.callEvent(event)
+        FDPClient.eventManager.callEvent(event)
         if (event.isCancelled) return
 
         // Stop blocking
@@ -680,44 +753,48 @@ class KillAura : Module() {
         runSwing()
         packetSent = true
         mc.netHandler.addToSendQueue(C02PacketUseEntity(entity, C02PacketUseEntity.Action.ATTACK))
-        
-        
+
+
         swingKeepSprint(entity)
 
         postAttack(entity)
-        
+
         CooldownHelper.resetLastAttackedTicks()
     }
-    
+
     private fun preAttack() {
         if (mc.thePlayer.isBlocking || blockingStatus) {
             when (autoBlockPacketValue.get().lowercase()) {
                 "vanilla" -> null
-                "aftertick", "afterattack", "delayed" -> stopBlocking()
+                "aftertick", "afterattack", "delayed", "delayed2" -> stopBlocking()
                 "oldintave" -> {
                     mc.netHandler.addToSendQueue(C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem % 8 + 1))
                     mc.netHandler.addToSendQueue(C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem))
                     blockingStatus = false
                 }
-                "legit", "oldhypixel" -> null
+                "keyblock" -> mc.gameSettings.keyBindUseItem.pressed = false
+                "legit", "test", "holdkey", "gay" -> null
                 else -> null
             }
         }
     }
-    
+
     private fun postAttack(entity: EntityLivingBase) {
         if (mc.thePlayer.isBlocking || (autoBlockValue.equals("Range") && canBlock)) {
             if (blockRateValue.get() > 0 && Random().nextInt(100) <= blockRateValue.get()) {
+                if (smartAutoBlockValue.get() && clicks != 1 && mc.thePlayer.hurtTime < 4 && mc.thePlayer.getDistanceToEntityBox(entity) < 4) {
+                    return
+                }
                 when (autoBlockPacketValue.get().lowercase()) {
                     "vanilla", "afterattack", "oldintave" -> startBlocking(entity, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(entity) < maxRange))
-                    "aftertick", "oldhypixel", "legit" -> null
-                    "delayed" -> delayBlock = true
+                    "delayed", "keyblock" -> delayBlockTimer.reset()
+                    "aftertick", "legit", "delayed2", "test", "holdkey", "gay" -> null
                     else -> null
                 }
             }
         }
     }
-    
+
     private fun swingKeepSprint(entity: EntityLivingBase) {
         if (keepSprintValue.get()) {
             // Enchant Effect
@@ -740,7 +817,7 @@ class KillAura : Module() {
         }
 
         // 视角差异
-        val entityFov = RotationUtils.getRotationDifference(RotationUtils.toRotation(RotationUtils.getCenter(entity.entityBoundingBox), true), RotationUtils.serverRotation)
+        val entityFov = RotationUtils.getRotationDifference(RotationUtils.toRotation(RotationUtils.getCenter(entity.hitBox), true), RotationUtils.serverRotation)
 
         // 可以被看见
         if (entityFov <= mc.gameSettings.fovSetting) lastCanBeSeen = true
@@ -756,13 +833,13 @@ class KillAura : Module() {
             predictPlayerAmount = RandomUtils.nextFloat(maxPredictPlayerSizeValue.get(), minPredictPlayerSizeValue.get())
         }
 
-        val boundingBox = if (rotationModeValue.get() == "Test") entity.entityBoundingBox else getAABB(entity)
+        val boundingBox = if (rotationModeValue.get() == "Test") entity.hitBox else getAABB(entity)
 
         val rModes = when (rotationModeValue.get()) {
-            "LiquidBounce", "SmoothLiquid", "Derp" -> "LiquidBounce"
-            "ForceCenter", "SmoothCenter", "OldMatrix", "Spin", "FastSpin" -> "CenterLine"
+            "LiquidBounce", "SmoothLiquid" -> "LiquidBounce"
+            "ForceCenter", "SmoothCenter", "OldMatrix", -> "CenterLine"
             "LockView" -> "CenterSimple"
-            "Test" -> "HalfUp"
+            "SmoothCustom" -> customRotationValue.get()
             else -> "LiquidBounce"
         }
 
@@ -772,7 +849,7 @@ class KillAura : Module() {
                         randomCenterModeValue.get(),
                         (randomCenRangeValue.get()).toDouble(),
                         boundingBox,
-                        predictValue.get() && rotationModeValue.get() != "Test",
+                        predictValue.get(),
                         true
                 ) ?: return false
 
@@ -790,7 +867,7 @@ class KillAura : Module() {
             "QuadSine" -> (-cos(diffAngle / 180 * Math.PI) * 0.5 + 0.5).pow(2.0) * maxTurnSpeedValue.get() + (1 - (-cos(diffAngle / 180 * Math.PI) * 0.5 + 0.5).pow(2.0)) * minTurnSpeedValue.get()
             else -> 360.0
         }
-        
+
         if (!lastCanBeSeen && rotationDelayValue.get() && !rotationTimer.hasTimePassed(rotationDelayMSValue.get().toLong())) return true
 
         val rotation = when (rotationModeValue.get()) {
@@ -803,12 +880,7 @@ class KillAura : Module() {
                 directRotation,
                 (180.0).toFloat()
             )
-            "SmoothCenter", "SmoothLiquid", "OldMatrix" -> RotationUtils.limitAngleChange(
-                RotationUtils.serverRotation,
-                directRotation,
-                (calculateSpeed).toFloat()
-            )
-            "Test" -> RotationUtils.limitAngleChange(
+            "SmoothCenter", "SmoothLiquid", "SmoothCustom", "OldMatrix" -> RotationUtils.limitAngleChange(
                 RotationUtils.serverRotation,
                 directRotation,
                 (calculateSpeed).toFloat()
@@ -872,7 +944,7 @@ class KillAura : Module() {
             val positionEye = mc.renderViewEntity?.getPositionEyes(1F)
 
             val expandSize = interactEntity.collisionBorderSize.toDouble()
-            val boundingBox = interactEntity.entityBoundingBox.expand(expandSize, expandSize, expandSize)
+            val boundingBox = interactEntity.hitBox
 
             val (yaw, pitch) = RotationUtils.targetRotation ?: Rotation(mc.thePlayer!!.rotationYaw, mc.thePlayer!!.rotationPitch)
             val yawCos = cos(-yaw * 0.017453292F - Math.PI.toFloat())
@@ -917,7 +989,7 @@ class KillAura : Module() {
             packetSent = true
         }
     }
-    
+
     /**
      * Render event
      */
@@ -976,6 +1048,21 @@ class KillAura : Module() {
             attackDelay = getAttackDelay(minCpsValue.get(), maxCpsValue.get())
         }
 
+        if (currentTarget != null && attackTimer.hasTimePassed((attackDelay.toDouble() * 0.9).toLong()) && (autoBlockValue.equals("Range") && canBlock) && autoBlockPacketValue.equals("KeyBlock")) {
+             mc.gameSettings.keyBindUseItem.pressed = false
+        }
+
+        if (currentTarget != null && delayBlockTimer.hasTimePassed(30) && (autoBlockValue.equals("Range") && canBlock)) {
+            if (autoBlockPacketValue.equals("KeyBlock")) {
+                mc.gameSettings.keyBindUseItem.pressed = true
+            }
+            if (autoBlockPacketValue.equals("Delayed")) {
+                val target = this.currentTarget ?: discoveredTargets.getOrNull(0) ?: return
+                startBlocking(target, interactAutoBlockValue.get() && (mc.thePlayer.getDistanceToEntityBox(target) < maxRange))
+            }
+        }
+                
+
         discoveredTargets.forEach {
             when (markValue.get().lowercase()) {
                 "liquid" -> {
@@ -986,10 +1073,12 @@ class KillAura : Module() {
                 }
                 "block", "otherblock" -> {
                     val bb = it.entityBoundingBox
-                    it.entityBoundingBox = it.entityBoundingBox.expand(0.2, 0.2, 0.2)
+                    it.entityBoundingBox = it.entityBoundingBox.expand(blockMarkExpandValue.get().toDouble(),
+                                                            blockMarkExpandValue.get().toDouble(),
+                                                            blockMarkExpandValue.get().toDouble())
                     RenderUtils.drawEntityBox(
                         it,
-                        if (it.hurtTime <= 0) if (it == currentTarget) Color(255, 0, 0, 170) else Color(255, 0, 0, 170) else Color(255, 0, 0, 170),
+                        if (it.hurtTime <= 0) if (it == currentTarget) Color(25, 230, 0, 170) else Color(10, 250, 10, 170) else Color(255, 0, 0, 170),
                         markValue.equals("Block"),
                         true,
                         4f
@@ -1015,7 +1104,7 @@ class KillAura : Module() {
                     GL11.glEnable(GL11.GL_BLEND)
                     GL11.glDisable(GL11.GL_DEPTH_TEST)
 
-                    val bb = it.entityBoundingBox
+                    val bb = it.hitBox
                     val radius = ((bb.maxX - bb.minX) + (bb.maxZ - bb.minZ)) * 0.5f
                     val height = bb.maxY - bb.minY
                     val x =
@@ -1047,7 +1136,7 @@ class KillAura : Module() {
                     GL11.glEnable(GL11.GL_TEXTURE_2D)
                     GL11.glPopMatrix()
                 }
-                "jello" -> { 
+                "jello" -> {
                     val drawTime = (System.currentTimeMillis() % 2000).toInt()
                     val drawMode=drawTime>1000
                     var drawPercent=drawTime/1000.0
@@ -1059,7 +1148,7 @@ class KillAura : Module() {
                     }
                     drawPercent=EaseUtils.easeInOutQuad(drawPercent)
                     val points = mutableListOf<Vec3>()
-                    val bb=it.entityBoundingBox
+                    val bb=it.hitBox
                     val radius=bb.maxX-bb.minX
                     val height=bb.maxY-bb.minY
                     val posX = it.lastTickPosX + (it.posX - it.lastTickPosX) * mc.timer.renderPartialTicks
@@ -1134,7 +1223,7 @@ class KillAura : Module() {
                     GL11.glShadeModel(7425)
                     mc.entityRenderer.disableLightmap()
 
-                    val bb = it.entityBoundingBox
+                    val bb = it.hitBox
                     val radius = ((bb.maxX - bb.minX) + (bb.maxZ - bb.minZ)) * 0.5f
                     val height = bb.maxY - bb.minY
                     val x =
@@ -1183,7 +1272,7 @@ class KillAura : Module() {
                     GL11.glEnable(GL11.GL_TEXTURE_2D)
                     GL11.glPopMatrix()
                 }
-             
+
                 "sims" -> {
                     val radius = 0.15f
                     val side = 4
@@ -1227,10 +1316,14 @@ class KillAura : Module() {
      */
     private val cancelRun: Boolean
         get() = mc.thePlayer.isSpectator || !isAlive(mc.thePlayer)
-                || (blinkCheck.get() && LiquidBounce.moduleManager[Blink::class.java]!!.state) || LiquidBounce.moduleManager[FreeCam::class.java]!!.state ||
-                (noScaffValue.get() && LiquidBounce.moduleManager[Scaffold::class.java]!!.state) || (noFlyValue.get() && LiquidBounce.moduleManager[Fly::class.java]!!.state) || (noInventoryAttackValue.equals("CancelRun") && (mc.currentScreen is GuiContainer ||
-                    System.currentTimeMillis() - containerOpen < noInventoryDelayValue.get()))
-        
+                || (blinkCheck.get() && FDPClient.moduleManager[Blink::class.java]!!.state) 
+                || FDPClient.moduleManager[FreeCam::class.java]!!.state 
+                || (noScaffValue.get() && FDPClient.moduleManager[Scaffold::class.java]!!.state)
+                || (noFlyValue.get() && FDPClient.moduleManager[Flight::class.java]!!.state)
+                || (noEat.get() && mc.thePlayer.isUsingItem && (mc.thePlayer.heldItem?.item is ItemFood || mc.thePlayer.heldItem?.item is ItemBucketMilk))
+                || (noBlocking.get() && mc.thePlayer.isUsingItem && mc.thePlayer.heldItem?.item is ItemBlock)
+                || (noInventoryAttackValue.equals("CancelRun") && (mc.currentScreen is GuiContainer || System.currentTimeMillis() - containerOpen < noInventoryDelayValue.get()))
+
 
     /**
      * Check if [entity] is alive
@@ -1253,6 +1346,11 @@ class KillAura : Module() {
      * HUD Tag
      */
 
+
     override val tag: String
-        get() = targetModeValue.get() + ", " + autoBlockValue.get() + ", Reach:" + rangeValue.get() + ", " + minCpsValue.get() + " - " + maxCpsValue.get()
+        get() = when (displayMode.get().lowercase()) {
+         "simple" -> targetModeValue.get() + ""
+         "lesssimple" -> rangeValue.get().toString() + " " + targetModeValue.get().toString() + " " + autoBlockValue.get().toString()
+          "complicated" -> "M:" + targetModeValue.get() + ", AB:" + autoBlockValue.get() + ", R:" + rangeValue.get() + ", CPS:" + minCpsValue.get() + " - " + maxCpsValue.get()else -> targetModeValue.get() + ""
+        }
 }

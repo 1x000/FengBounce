@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.Listenable
 import net.ccbluex.liquidbounce.features.module.modules.client.HUD
 import net.ccbluex.liquidbounce.features.module.modules.client.SoundModule
@@ -33,7 +33,7 @@ open class Module : MinecraftInstance(), Listenable {
     var name: String
     private var suffix: String? = null
     private val properties: List<Value<*>> = ArrayList<Value<*>>()
-    var toggled = false
+    private var toggled = false
     var localizedName = ""
         get() = field.ifEmpty { name }
     var description: String
@@ -42,16 +42,16 @@ open class Module : MinecraftInstance(), Listenable {
         set(keyBind) {
             field = keyBind
 
-            if (!LiquidBounce.isStarting) {
-                LiquidBounce.configManager.smartSave()
+            if (!FDPClient.isStarting) {
+                FDPClient.configManager.smartSave()
             }
         }
     var array = true
         set(array) {
             field = array
 
-            if (!LiquidBounce.isStarting) {
-                LiquidBounce.configManager.smartSave()
+            if (!FDPClient.isStarting) {
+                FDPClient.configManager.smartSave()
             }
         }
     val canEnable: Boolean
@@ -61,10 +61,6 @@ open class Module : MinecraftInstance(), Listenable {
     val moduleInfo = javaClass.getAnnotation(ModuleInfo::class.java)!!
     var splicedName = ""
         get() {
-//            val translatedName=LanguageManager.replace(localizedName)
-//            if(field.replace(" ","") != translatedName){
-//                field=StringUtils.toCompleteString(RegexUtils.match(translatedName, "[A-Z][a-z]*"))
-//            }
             if (field.isEmpty()) {
                 val sb = StringBuilder()
                 val arr = name.toCharArray()
@@ -110,13 +106,13 @@ open class Module : MinecraftInstance(), Listenable {
             onToggle(value)
 
             // Play sound and add notification
-            if (!LiquidBounce.isStarting) {
+            if (!FDPClient.isStarting) {
                 if (value) {
                     SoundModule.playSound(true)
-                    LiquidBounce.hud.addNotification(Notification(LanguageManager.getAndFormat("notify.module.title"), LanguageManager.getAndFormat("notify.module.enable", localizedName), NotifyType.SUCCESS))
+                    FDPClient.hud.addNotification(Notification(LanguageManager.getAndFormat("notify.module.title"), LanguageManager.getAndFormat("notify.module.enable", localizedName), NotifyType.SUCCESS))
                 } else {
                     SoundModule.playSound(false)
-                    LiquidBounce.hud.addNotification(Notification(LanguageManager.getAndFormat("notify.module.title"), LanguageManager.getAndFormat("notify.module.disable", localizedName), NotifyType.ERROR))
+                    FDPClient.hud.addNotification(Notification(LanguageManager.getAndFormat("notify.module.title"), LanguageManager.getAndFormat("notify.module.disable", localizedName), NotifyType.ERROR))
                 }
             }
 
@@ -133,12 +129,12 @@ open class Module : MinecraftInstance(), Listenable {
             }
 
             // Save module state
-            LiquidBounce.configManager.smartSave()
+            FDPClient.configManager.smartSave()
         }
 
     // HUD
     val hue = Math.random().toFloat()
-    var slideAnimation: Animation? = null
+    private var slideAnimation: Animation? = null
     var slide = 0f
         get() {
             if (slideAnimation != null) {
@@ -155,7 +151,7 @@ open class Module : MinecraftInstance(), Listenable {
             }
         }
     var yPosAnimation: Animation? = null
-    var yPos = 0f
+    open var yPos = 0f
         get() {
             if (yPosAnimation != null) {
                 field = yPosAnimation!!.value.toFloat()
@@ -170,7 +166,6 @@ open class Module : MinecraftInstance(), Listenable {
                 yPosAnimation = Animation(EaseUtils.EnumEasingType.valueOf(HUD.arraylistYAxisAnimTypeValue.get()), EaseUtils.EnumEasingOrder.valueOf(HUD.arraylistYAxisAnimOrderValue.get()), field.toDouble(), value.toDouble(), HUD.arraylistYAxisAnimSpeedValue.get() * 30L).start()
             }
         }
-
 
     // Tag
     open val tag: String?
@@ -262,4 +257,5 @@ open class Module : MinecraftInstance(), Listenable {
      * Events should be handled when module is enabled
      */
     override fun handleEvents() = state
+
 }

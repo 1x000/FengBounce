@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.movement
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.EnumAutoDisableType
 import net.ccbluex.liquidbounce.features.module.Module
@@ -19,7 +19,8 @@ import net.ccbluex.liquidbounce.features.value.ListValue
 import net.minecraft.network.play.server.S19PacketEntityStatus
 
 @ModuleInfo(name = "Glide", category = ModuleCategory.MOVEMENT, autoDisable = EnumAutoDisableType.FLAG)
-class Glide : Module() {
+object Glide : Module() {
+
     private val modes = ClassUtils.resolvePackage("${this.javaClass.`package`.name}.glides", GlideMode::class.java)
         .map { it.newInstance() as GlideMode }
         .sortedBy { it.modeName }
@@ -53,7 +54,7 @@ class Glide : Module() {
     override fun onEnable() {
         if (mc.thePlayer.onGround && fakeDamageValue.get()) {
             val event = PacketEvent(S19PacketEntityStatus(mc.thePlayer, 2.toByte()), PacketEvent.Type.RECEIVE)
-            LiquidBounce.eventManager.callEvent(event)
+            FDPClient.eventManager.callEvent(event)
             if (!event.isCancelled) {
                 mc.thePlayer.handleStatusUpdate(2.toByte())
             }

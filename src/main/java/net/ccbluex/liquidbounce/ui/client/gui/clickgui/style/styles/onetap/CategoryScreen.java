@@ -1,11 +1,11 @@
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap;
 
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 import net.ccbluex.liquidbounce.features.module.Module;
 import net.ccbluex.liquidbounce.features.module.ModuleCategory;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.Utils.Position;
 import net.ccbluex.liquidbounce.ui.font.Fonts;
-import net.ccbluex.liquidbounce.utils.math.MathUtils;
+import net.ccbluex.liquidbounce.utils.MathUtils;
 import net.ccbluex.liquidbounce.utils.misc.Direction;
 import net.ccbluex.liquidbounce.utils.misc.SmoothStepAnimation;
 import net.ccbluex.liquidbounce.utils.misc.Animation;
@@ -70,7 +70,7 @@ public class CategoryScreen
         int count = 0;
         int leftAdd = 0;
         int rightAdd = 0;
-        for (final Module module : LiquidBounce.moduleManager.getModuleInCategory(this.category)) {
+        for (final Module module : FDPClient.moduleManager.getModuleInCategory(this.category)) {
             final float posWidth = 0.0f;
             final float posX = this.pos.x + ((count % 2 == 0) ? 0 : 145);
             final float posY = this.pos.y + ((count % 2 == 0) ? leftAdd : rightAdd);
@@ -95,7 +95,7 @@ public class CategoryScreen
             if (this.selected) {
                 final double scrolll = this.getScroll();
                 for (final ModuleRender module2 : this.moduleList) {
-                    module2.scrollY = (int) MathUtils.roundToHalf(scrolll);
+                    module2.scrollY = (int) MathUtils.INSTANCE.roundToHalf(scrolll);
                 }
                 this.onScroll(30);
                 this.maxScroll = Math.max(0.0f, this.moduleList.get(this.moduleList.size() - 1).getY() + this.moduleList.get(this.moduleList.size() - 1).height * 2 + 2500.0f);

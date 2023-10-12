@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector4d;
-import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.FDPClient;
 import net.ccbluex.liquidbounce.event.*;
 import net.ccbluex.liquidbounce.features.module.Module;
 import net.ccbluex.liquidbounce.features.module.ModuleCategory;
@@ -50,6 +50,7 @@ import org.lwjgl.util.glu.GLU;
 
 @ModuleInfo(name = "ESP2D", category = ModuleCategory.RENDER)
 public final class ESP2D extends Module {
+
     public final BoolValue outline = new BoolValue("Outline", true);
     public final ListValue boxMode = new ListValue("Mode", new String[]{"Box", "Corners"}, "Box");
     public final BoolValue healthBar = new BoolValue("Health-bar", true);
@@ -89,6 +90,7 @@ public final class ESP2D extends Module {
 
     private final DecimalFormat dFormat = new DecimalFormat("0.0");
 
+    private static ModuleCategory category = ModuleCategory.RENDER;
     public ESP2D() {
         this.viewport = GLAllocation.createDirectIntBuffer(16);
         this.modelview = GLAllocation.createDirectFloatBuffer(16);
@@ -139,7 +141,7 @@ public final class ESP2D extends Module {
     }
 
     public static boolean shouldCancelNameTag(EntityLivingBase entity) {
-        return LiquidBounce.moduleManager.getModule(ESP2D.class) != null && LiquidBounce.moduleManager.getModule(ESP2D.class).getState() && LiquidBounce.moduleManager.getModule(ESP2D.class).tagsValue.get() && collectedEntities.contains(entity);
+        return FDPClient.moduleManager.getModule(ESP2D.class) != null && FDPClient.moduleManager.getModule(ESP2D.class).getState() && FDPClient.moduleManager.getModule(ESP2D.class).tagsValue.get() && collectedEntities.contains(entity);
     }
 
     @Override

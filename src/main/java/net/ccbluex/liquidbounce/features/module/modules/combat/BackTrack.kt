@@ -18,7 +18,7 @@ import net.ccbluex.liquidbounce.features.value.IntegerValue
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL11.*
 import java.awt.Color
 import java.util.*
 
@@ -36,9 +36,8 @@ object Backtrack : Module() {
 
     @EventTarget
     fun onPacket(event: PacketEvent) {
-        val packet = event.packet
 
-        when (packet) {
+        when (val packet = event.packet) {
             // Check if packet is a spawn player packet
             is S0CPacketSpawnPlayer -> {
                 // Insert first backtrack data
@@ -79,16 +78,16 @@ object Backtrack : Module() {
 
         for (entity in mc.theWorld.loadedEntityList) {
             if (entity is EntityPlayer) {
-                GL11.glPushMatrix()
-                GL11.glDisable(GL11.GL_TEXTURE_2D)
-                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-                GL11.glEnable(GL11.GL_LINE_SMOOTH)
-                GL11.glEnable(GL11.GL_BLEND)
-                GL11.glDisable(GL11.GL_DEPTH_TEST)
+                glPushMatrix()
+                glDisable(GL_TEXTURE_2D)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glEnable(GL_LINE_SMOOTH)
+                glEnable(GL_BLEND)
+                glDisable(GL_DEPTH_TEST)
 
                 mc.entityRenderer.disableLightmap()
 
-                GL11.glBegin(GL11.GL_LINE_STRIP)
+                glBegin(GL_LINE_STRIP)
                 RenderUtils.glColor(color)
 
                 val renderPosX = mc.renderManager.viewerPosX
@@ -96,17 +95,17 @@ object Backtrack : Module() {
                 val renderPosZ = mc.renderManager.viewerPosZ
 
                 loopThroughBacktrackData(entity) {
-                    GL11.glVertex3d(entity.posX - renderPosX, entity.posY - renderPosY, entity.posZ - renderPosZ)
+                    glVertex3d(entity.posX - renderPosX, entity.posY - renderPosY, entity.posZ - renderPosZ)
                     false
                 }
 
-                GL11.glColor4d(1.0, 1.0, 1.0, 1.0)
-                GL11.glEnd()
-                GL11.glEnable(GL11.GL_DEPTH_TEST)
-                GL11.glDisable(GL11.GL_LINE_SMOOTH)
-                GL11.glDisable(GL11.GL_BLEND)
-                GL11.glEnable(GL11.GL_TEXTURE_2D)
-                GL11.glPopMatrix()
+                glColor4d(1.0, 1.0, 1.0, 1.0)
+                glEnd()
+                glEnable(GL_DEPTH_TEST)
+                glDisable(GL_LINE_SMOOTH)
+                glDisable(GL_BLEND)
+                glEnable(GL_TEXTURE_2D)
+                glPopMatrix()
             }
         }
     }
@@ -131,9 +130,9 @@ object Backtrack : Module() {
         }
     }
 
-    fun getBacktrackData(id: UUID) = backtrackedPlayer[id]
+    private fun getBacktrackData(id: UUID) = backtrackedPlayer[id]
 
-    fun removeBacktrackData(id: UUID) {
+    private fun removeBacktrackData(id: UUID) {
         backtrackedPlayer.remove(id)
     }
 

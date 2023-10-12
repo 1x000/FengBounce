@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.world
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
@@ -29,7 +29,6 @@ import kotlin.concurrent.schedule
 
 @ModuleInfo(name = "ChestAura", category = ModuleCategory.WORLD)
 object ChestAura : Module() {
-
     private val rangeValue = FloatValue("Range", 5F, 1F, 6F)
     private val delayValue = IntegerValue("Delay", 100, 50, 500)
     private val throughWallsValue = BoolValue("ThroughWalls", true)
@@ -48,7 +47,7 @@ object ChestAura : Module() {
 
     @EventTarget
     fun onMotion(event: MotionEvent) {
-        if ((onlyOnGroundValue.get() && !mc.thePlayer.onGround) || (noCombatingValue.get() && LiquidBounce.combatManager.inCombat)) {
+        if ((onlyOnGroundValue.get() && !mc.thePlayer.onGround) || (noCombatingValue.get() && FDPClient.combatManager.inCombat)) {
             return
         }
 

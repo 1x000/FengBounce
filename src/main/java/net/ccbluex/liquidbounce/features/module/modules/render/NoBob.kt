@@ -12,8 +12,7 @@ import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 
 @ModuleInfo(name = "NoBob", category = ModuleCategory.RENDER)
-class NoBob : Module() {
-
+object NoBob : Module() {
     @EventTarget
     fun onUpdate(event: UpdateEvent) {
         mc.thePlayer.distanceWalkedModified = 0f

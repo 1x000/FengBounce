@@ -13,16 +13,16 @@ import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.utils.misc.RandomUtils
 import net.ccbluex.liquidbounce.utils.timer.TimeUtils
-import net.ccbluex.liquidbounce.utils.timer.TickTimer
 import net.ccbluex.liquidbounce.features.value.*
-import net.ccbluex.liquidbounce.utils.math.MathUtils
+import net.ccbluex.liquidbounce.utils.MathUtils
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemSword
 import kotlin.random.Random
+import org.lwjgl.input.Mouse
 
 @ModuleInfo(name = "AutoClicker", category = ModuleCategory.COMBAT)
-class AutoClicker : Module() {
+object AutoClicker : Module() {
 
     private val modeValue = ListValue("Mode", arrayOf("Normal", "Gaussian", "LegitJitter", "LegitButterfly"), "Normal")
     private val legitJitterValue = ListValue("LegitJitterMode", arrayOf("Jitter1", "Jitter2", "Jitter3", "SimpleJitter"), "Jitter1").displayable {modeValue.equals("LegitJitter")}
@@ -50,7 +50,9 @@ class AutoClicker : Module() {
     private val rightBlockOnlyValue = BoolValue("RightBlockOnly", false).displayable { rightValue.get() }
     private val leftValue = BoolValue("LeftClick", true)
     private val leftSwordOnlyValue = BoolValue("LeftSwordOnly", false).displayable { leftValue.get() }
+    private val breakStopValue = BoolValue("BreakingStop", true).displayable { leftValue.get() }
     private val blockValue = BoolValue("AutoBlock", false). displayable { leftValue.get() }
+    private val blockOnClick = BoolValue("AutoBlockOnRightClick", true). displayable { leftValue.get() && blockValue.get() }
     private val jitterValue = BoolValue("Jitter", false)
     
 
@@ -68,14 +70,13 @@ class AutoClicker : Module() {
 
     private var delayNum = 0
     private var cDelay = 0
-    private val timer = TickTimer()
 
 
 
     @EventTarget
     fun onRender(event: Render3DEvent) {
         if (mc.gameSettings.keyBindAttack.isKeyDown && leftValue.get() &&
-            System.currentTimeMillis() - leftLastSwing >= leftDelay && (!leftSwordOnlyValue.get() || mc.thePlayer.heldItem?.item is ItemSword) && mc.playerController.curBlockDamageMP == 0F) {
+            System.currentTimeMillis() - leftLastSwing >= leftDelay && (!leftSwordOnlyValue.get() || mc.thePlayer.heldItem?.item is ItemSword) && (!breakStopValue.get() || mc.playerController.curBlockDamageMP == 0F)) {
             KeyBinding.onTick(mc.gameSettings.keyBindAttack.keyCode) // Minecraft Click Handling
 
            leftLastSwing = System.currentTimeMillis()
@@ -88,6 +89,23 @@ class AutoClicker : Module() {
             
             rightLastSwing = System.currentTimeMillis()
             rightDelay = updateClicks().toLong() - 1L
+        }
+        
+        if (blockValue.get() && mc.thePlayer.heldItem?.item is ItemSword && mc.gameSettings.keyBindAttack.isKeyDown && leftValue.get() && blockOnClick.get() && Mouse.isButtonDown(1) && (!breakStopValue.get() || mc.playerController.curBlockDamageMP == 0F)) {
+            mc.gameSettings.keyBindUseItem.pressed = false
+        }
+        if (blockValue.get() && mc.thePlayer.heldItem?.item is ItemSword && mc.gameSettings.keyBindAttack.isKeyDown && leftValue.get() && (!breakStopValue.get() || mc.playerController.curBlockDamageMP == 0F)) {
+            if (System.currentTimeMillis() - leftLastSwing >= leftDelay * 0.1 && System.currentTimeMillis() - leftLastSwing <= leftDelay * 0.8) {
+                if (blockOnClick.get()) {
+                    if (Mouse.isButtonDown(1)) {
+                        mc.gameSettings.keyBindUseItem.pressed = true
+                    }
+                } else {
+                    mc.gameSettings.keyBindUseItem.pressed = true
+                }
+            } else {
+                mc.gameSettings.keyBindUseItem.pressed = false
+            }
         }
             
     }
@@ -108,20 +126,12 @@ class AutoClicker : Module() {
                     mc.thePlayer.rotationPitch = -90F
             }
          }
-        if (blockValue.get() && timer.hasTimePassed(1) && mc.gameSettings.keyBindAttack.isKeyDown && leftValue.get()) {
-            KeyBinding.onTick(mc.gameSettings.keyBindUseItem.keyCode)
-        }
     }
 
     override fun onEnable() {
         if(modeValue.equals("Gaussian")) {
             gaussianUpdateDelay()
         }
-         timer.update()
-    }
-    
-    override fun onDisable() {
-       timer.reset()
     }
 
     private fun gaussianUpdateDelay(): Float {

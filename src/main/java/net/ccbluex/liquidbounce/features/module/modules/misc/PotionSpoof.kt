@@ -16,7 +16,8 @@ import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
 
 @ModuleInfo(name = "PotionSpoof",  category = ModuleCategory.MISC)
-class PotionSpoof : Module() {
+object PotionSpoof : Module() {
+
     private val speedValue = BoolValue("Speed", false)
     private val moveSlowDownValue = BoolValue("Slowness", false)
     private val hasteValue = BoolValue("Haste", false)

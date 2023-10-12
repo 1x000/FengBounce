@@ -5,7 +5,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.LiquidBounce
+import net.ccbluex.liquidbounce.FDPClient
 import net.ccbluex.liquidbounce.features.command.Command
 import net.ccbluex.liquidbounce.features.module.EnumAutoDisableType
 import net.ccbluex.liquidbounce.features.module.Module
@@ -16,6 +16,7 @@ import net.minecraft.init.Blocks
 
 @ModuleInfo(name = "XRay", category = ModuleCategory.RENDER, autoDisable = EnumAutoDisableType.RESPAWN, moduleCommand = false)
 class XRay : Module() {
+
     val xrayBlocks = mutableListOf<Block>(
             Blocks.bed,
             Blocks.coal_ore,
@@ -39,7 +40,7 @@ class XRay : Module() {
     )
 
     init {
-        LiquidBounce.commandManager.registerCommand(object : Command("xray", emptyArray()) {
+        FDPClient.commandManager.registerCommand(object : Command("xray", emptyArray()) {
 
             override fun execute(args: Array<String>) {
                 if (args.size > 1) {
@@ -65,7 +66,7 @@ class XRay : Module() {
                                 }
 
                                 xrayBlocks.add(block)
-                                LiquidBounce.fileManager.saveConfig(LiquidBounce.fileManager.xrayConfig)
+                                FDPClient.fileManager.saveConfig(FDPClient.fileManager.xrayConfig)
                                 alert("§7Added block §8${block.localizedName}§7.")
                                 playEdit()
                             } catch (exception: NumberFormatException) {
@@ -101,7 +102,7 @@ class XRay : Module() {
                                 }
 
                                 xrayBlocks.remove(block)
-                                LiquidBounce.fileManager.saveConfig(LiquidBounce.fileManager.xrayConfig)
+                                FDPClient.fileManager.saveConfig(FDPClient.fileManager.xrayConfig)
                                 alert("§7Removed block §8${block.localizedName}§7.")
                                 playEdit()
                             } catch (exception: NumberFormatException) {

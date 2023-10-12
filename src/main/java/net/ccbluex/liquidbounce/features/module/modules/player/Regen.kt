@@ -19,7 +19,7 @@ import net.minecraft.network.play.client.C03PacketPlayer
 import net.minecraft.potion.Potion
 
 @ModuleInfo(name = "Regen", category = ModuleCategory.PLAYER)
-class Regen : Module() {
+object Regen : Module() {
 
     private val modeValue = ListValue("Mode", arrayOf("Vanilla", "OldSpartan", "NewSpartan", "AAC4NoFire"), "Vanilla")
     private val healthValue = IntegerValue("Health", 18, 0, 20)
