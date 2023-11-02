@@ -1,13 +1,13 @@
 [
   {
-    "modid": "fdpclient",
-    "name": "FDPClient",
-    "description": "Minecraft 1.8 Utility mod",
+    "modid": "FengBounce",
+    "name": "FengBounce",
+    "description": "我的世界1.8版本绕过水影Mod",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://fdpinfo.github.io",
+    "url": "https://feng.xpdbk.com",
     "updateUrl": "",
-    "authorList": ["CCBlueX", "Zywl", "SkidderMC"],
+    "authorList": ["CCBlueX", "Zywl", "SkidderMC", "LEl_FENG"],
     "credits": "",
     "logoFile": "",
     "screenshots": [],

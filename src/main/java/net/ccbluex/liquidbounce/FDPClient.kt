@@ -38,11 +38,11 @@ import kotlin.concurrent.thread
 object FDPClient {
 
     // Client information
-    const val CLIENT_NAME = "FDPClient"
-    const val COLORED_NAME = "§7[§b§lFDPClient§7] "
-    const val CLIENT_CREATOR = "CCBlueX, Zywl & SkidderMC TEAM"
-    const val CLIENT_WEBSITE = "fdpinfo.github.io"
-    const val CLIENT_VERSION = "v5.4.0"
+    const val CLIENT_NAME = "FengBounce"
+    const val COLORED_NAME = "§7[§b§lFengBounce§7] "
+    const val CLIENT_CREATOR = "CCBlueX, Zywl & SkidderMC TEAM & LEl_FENG"
+    const val CLIENT_WEBSITE = "feng.xpdbk.com"
+    const val CLIENT_VERSION = "v1.0"
 
     // Flags
     var isStarting = true
